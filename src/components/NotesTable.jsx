@@ -42,14 +42,20 @@ export default function NotesTable({ goal, days }) {
                 <td colSpan={4} className="nt-empty">No logs yet</td>
               </tr>
             ) : pageRows.map(({ dateStr, dayNumber, data }) => {
-              const color = STATUS_COLORS[data.status];
+              const color = data.status ? STATUS_COLORS[data.status] : null;
               return (
                 <tr key={dateStr}>
                   <td className="col-day">{dayNumber}</td>
                   <td className="col-date">{dateStr}</td>
                   <td className="col-status">
-                    <span className="nt-status-dot" style={{ background: color.bg }} />
-                    <span className="nt-status-label">{color.label}</span>
+                    {color ? (
+                      <>
+                        <span className="nt-status-dot" style={{ background: color.bg }} />
+                        <span className="nt-status-label">{color.label}</span>
+                      </>
+                    ) : (
+                      <span className="nt-no-note">—</span>
+                    )}
                   </td>
                   <td className="col-note">
                     {data.note ? (

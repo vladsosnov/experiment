@@ -7,6 +7,8 @@ const KEY_MAP = { '1': 'green', '2': 'blue', '3': 'yellow', '4': 'red' };
 export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) {
   const [status, setStatus] = useState(data?.status ?? null);
   const [note, setNote] = useState(data?.note ?? '');
+  const [todos, setTodos] = useState(data?.todos ?? []);
+  const [newTodo, setNewTodo] = useState('');
   const noteRef = useRef(null);
 
   // Keyboard shortcuts
@@ -20,8 +22,36 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
   }, [onClose]);
 
   function handleSave() {
-    onSave(dateStr, { status, note: note.trim() });
+    // Allow saving todos independently OR status+note together
+    const hasTodos = todos.length > 0;
+    const hasStatus = status !== null;
+
+    // If status is selected, note is required
+    if (hasStatus && !note.trim()) {
+      return;
+    }
+
+    // Must have either todos or status to save
+    if (!hasTodos && !hasStatus) {
+      return;
+    }
+
+    onSave(dateStr, { status, note: note.trim(), todos });
     onClose();
+  }
+
+  function handleAddTodo() {
+    if (!newTodo.trim()) return;
+    setTodos([...todos, { id: Date.now(), text: newTodo.trim(), completed: false }]);
+    setNewTodo('');
+  }
+
+  function handleToggleTodo(id) {
+    setTodos(todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  }
+
+  function handleDeleteTodo(id) {
+    setTodos(todos.filter(t => t.id !== id));
   }
 
   function handleClear() {
@@ -82,6 +112,41 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
           />
         </label>
 
+        <div className="todo-section">
+          <h3 className="todo-title">TODOs</h3>
+          <div className="todo-input-row">
+            <input
+              type="text"
+              className="todo-input"
+              value={newTodo}
+              onChange={(e) => setNewTodo(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddTodo()}
+              placeholder="Add a todo item..."
+            />
+            <button className="btn-add-todo" onClick={handleAddTodo} disabled={!newTodo.trim()}>
+              +
+            </button>
+          </div>
+          {todos.length > 0 && (
+            <ul className="todo-list">
+              {todos.map((todo) => (
+                <li key={todo.id} className={`todo-item${todo.completed ? ' completed' : ''}`}>
+                  <input
+                    type="checkbox"
+                    className="todo-checkbox"
+                    checked={todo.completed}
+                    onChange={() => handleToggleTodo(todo.id)}
+                  />
+                  <span className="todo-text">{todo.text}</span>
+                  <button className="btn-delete-todo" onClick={() => handleDeleteTodo(todo.id)}>
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         <div className="modal-actions">
           {data && (
             <button className="btn-ghost" onClick={handleClear}>
@@ -91,7 +156,7 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
           <button
             className="btn-primary"
             onClick={handleSave}
-            disabled={!status || !note.trim()}
+            disabled={(status && !note.trim()) || (!status && !todos.length)}
           >
             Save
           </button>

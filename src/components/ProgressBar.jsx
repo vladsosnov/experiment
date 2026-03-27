@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { STATUS_COLORS } from './DaySquare';
+import { STATUS_COLORS } from './statusColors';
 import { dateRange, todayString } from '../utils/dates';
 
 export default function ProgressBar({ goal, days }) {

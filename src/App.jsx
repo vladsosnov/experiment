@@ -41,11 +41,19 @@ export default function App() {
 
   function handleDaySave(dateStr, data) {
     const next = { ...days };
-    if (data === null || !data.status) {
+    if (data === null) {
       delete next[dateStr];
     } else {
-      next[dateStr] = data;
-      setToast({ quote: getQuote(data.status), status: data.status });
+      // Save day if it has status OR todos
+      const hasContent = data.status || (data.todos && data.todos.length > 0);
+      if (hasContent) {
+        next[dateStr] = data;
+        if (data.status) {
+          setToast({ quote: getQuote(data.status), status: data.status });
+        }
+      } else {
+        delete next[dateStr];
+      }
     }
     saveDays(next);
     setState((s) => ({ ...s, days: next }));

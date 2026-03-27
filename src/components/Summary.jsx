@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { dateRange } from '../utils/dates';
-import { STATUS_COLORS } from './DaySquare';
+import { STATUS_COLORS } from './statusColors';
 
 const GOOD = new Set(['green', 'blue']);
 

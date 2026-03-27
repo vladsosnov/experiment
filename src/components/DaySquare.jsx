@@ -3,6 +3,7 @@ import { STATUS_COLORS } from './statusColors';
 export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture, isLastDay, onClick }) {
   const status = data?.status;
   const note = data?.note;
+  const hasIncompleteTodos = data?.todos && data.todos.some(t => !t.completed);
 
   const bg = status ? STATUS_COLORS[status].bg : (isFuture ? '#1e293b' : '#334155');
   const opacity = isFuture ? 0.35 : 1;
@@ -28,6 +29,8 @@ export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture,
       onKeyDown={(e) => {
         if (!isFuture && (e.key === 'Enter' || e.key === ' ')) onClick(dateStr);
       }}
-    />
+    >
+      {hasIncompleteTodos && <span className="todo-indicator" />}
+    </div>
   );
 }

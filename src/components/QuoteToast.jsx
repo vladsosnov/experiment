@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { STATUS_COLORS } from './DaySquare';
+import { STATUS_COLORS } from './statusColors';
 
 const STATUS_EMOJI = { green: '🌟', blue: '💪', yellow: '🔥', red: '❤️' };
 
