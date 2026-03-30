@@ -15,7 +15,8 @@ export default function ProgressBar({ goal, days }) {
   Object.values(days).forEach(({ status }) => {
     if (status && counts[status] !== undefined) counts[status]++;
   });
-  const filled = Object.keys(days).length;
+  // Only count days with status as "filled"
+  const filled = Object.values(days).filter(d => d.status).length;
   const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
 
   return (

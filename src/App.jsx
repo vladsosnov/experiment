@@ -8,6 +8,8 @@ import Congrats from './components/Congrats';
 import QuoteToast from './components/QuoteToast';
 import GoalEditModal from './components/GoalEditModal';
 import NotesTable from './components/NotesTable';
+import TodoInsights from './components/TodoInsights';
+import WeeklyReview from './components/WeeklyReview';
 import { loadGoal, saveGoal, loadDays, saveDays, clearAll } from './utils/storage';
 import { dateRange, todayString } from './utils/dates';
 import { getQuote } from './utils/quotes';
@@ -138,6 +140,8 @@ export default function App() {
       <main className="app-main">
         {days[goal.endDate] && <Congrats goal={goal} days={days} />}
         <ProgressBar goal={goal} days={days} />
+        <TodoInsights goal={goal} days={days} />
+        <WeeklyReview goal={goal} days={days} />
         <NotesTable goal={goal} days={days} />
         <Summary goal={goal} days={days} />
         <CalendarGrid goal={goal} days={days} onDayClick={handleDayClick} />

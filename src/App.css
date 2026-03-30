@@ -392,7 +392,7 @@
   margin: 0 auto;
   position: relative;
 }
-.day-square:hover:not(.future):not(.empty) {
+.day-square:hover:not(.empty) {
   transform: scale(1.15);
   filter: brightness(1.2);
   z-index: 1;
@@ -423,6 +423,19 @@
   border-radius: 50%;
   border: 1px solid #0f172a;
   z-index: 2;
+}
+
+/* Day number inside square */
+.day-number {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(248, 250, 252, 0.5);
+  pointer-events: none;
+  user-select: none;
 }
 
 /* Animated spring border for last day */
@@ -728,6 +741,242 @@
   gap: 10px;
 }
 
+/* ── Weekly Review ─────────────────────────────────────────────── */
+.weekly-review-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.review-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.review-page-info {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.review-insight {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.insight-positive {
+  color: #86efac;
+}
+
+.insight-negative {
+  color: #fca5a5;
+}
+
+.insight-neutral {
+  color: #94a3b8;
+}
+
+.insight-pattern {
+  color: #fde047;
+}
+
+.review-weeks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-week-card {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.week-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.week-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.week-days {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.week-bar {
+  height: 8px;
+  background: #1e293b;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.week-bar-fill {
+  height: 100%;
+  transition: width 0.3s;
+  border-radius: 4px;
+}
+
+.week-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.week-stat {
+  color: #cbd5e1;
+}
+
+.week-pct {
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.week-breakdown {
+  display: flex;
+  gap: 6px;
+}
+
+.week-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.review-pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #334155;
+}
+
+/* ── Todo Insights ─────────────────────────────────────────────── */
+.todo-insights-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.todo-insights-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.todo-insights-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.todo-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.todo-stat-card {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.todo-stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.todo-stat-label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.todo-upcoming {
+  border-top: 1px solid #334155;
+  padding-top: 16px;
+}
+
+.todo-upcoming-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin: 0 0 12px 0;
+}
+
+.todo-upcoming-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.todo-upcoming-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+}
+
+.todo-upcoming-day {
+  color: #6366f1;
+  font-weight: 600;
+  min-width: 60px;
+}
+
+.todo-upcoming-date {
+  color: #94a3b8;
+  flex: 1;
+}
+
+.todo-upcoming-count {
+  color: #f87171;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
 /* ── Summary / Streaks ─────────────────────────────────────────── */
 .summary-section {
   display: flex;
@@ -853,7 +1102,7 @@
   border: 1px solid #334155;
   border-radius: 12px;
   overflow: hidden;
-  height: 440px;
+  height: 480px;
   display: flex;
   flex-direction: column;
 }
@@ -863,7 +1112,36 @@
   justify-content: space-between;
   align-items: baseline;
   padding: 16px 24px 12px;
+}
+
+.notes-filters {
+  display: flex;
+  gap: 8px;
+  padding: 0 24px 12px;
   border-bottom: 1px solid #334155;
+}
+
+.filter-btn {
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-btn:hover {
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+.filter-btn.active {
+  background: #6366f1;
+  color: #fff;
+  border-color: #6366f1;
 }
 
 .notes-title {

@@ -52,7 +52,8 @@ export default function Summary({ goal, days }) {
   Object.values(days).forEach(({ status }) => {
     if (status && counts[status] !== undefined) counts[status]++;
   });
-  const filled = Object.keys(days).length;
+  // Only count days with status as "filled"
+  const filled = Object.values(days).filter(d => d.status).length;
 
   const bars = Object.entries(counts).map(([s, n]) => ({
     status: s,

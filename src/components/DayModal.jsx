@@ -90,7 +90,7 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
               key={s}
               className={`status-btn${status === s ? ' selected' : ''}`}
               style={{ '--color': STATUS_COLORS[s].bg }}
-              onClick={() => setStatus(s)}
+              onClick={() => setStatus(status === s ? null : s)}
             >
               <span className="status-dot" style={{ background: STATUS_COLORS[s].bg }} />
               <span className="status-label">{STATUS_COLORS[s].label}</span>

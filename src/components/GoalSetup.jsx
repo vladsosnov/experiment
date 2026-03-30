@@ -5,7 +5,7 @@ export default function GoalSetup({ onSave }) {
   const today = todayString();
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState('');
-  const [goalTitle, setGoalTitle] = useState('My Goal');
+  const [goalTitle, setGoalTitle] = useState('Experiment');
   const [error, setError] = useState('');
 
   const total = startDate && endDate ? daysBetween(startDate, endDate) : null;

@@ -22,15 +22,16 @@ export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture,
       className={`day-square${isToday ? ' today' : ''}${isFuture ? ' future' : ''}${isLastDay ? ' last-day' : ''}`}
       style={{ ...borderStyle, opacity }}
       title={tooltip}
-      onClick={() => !isFuture && onClick(dateStr)}
+      onClick={() => onClick(dateStr)}
       role="button"
       aria-label={tooltip}
-      tabIndex={isFuture ? -1 : 0}
+      tabIndex={0}
       onKeyDown={(e) => {
-        if (!isFuture && (e.key === 'Enter' || e.key === ' ')) onClick(dateStr);
+        if (e.key === 'Enter' || e.key === ' ') onClick(dateStr);
       }}
     >
       {hasIncompleteTodos && <span className="todo-indicator" />}
+      <span className="day-number">{dayNumber}</span>
     </div>
   );
 }
