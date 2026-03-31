@@ -42,3 +42,12 @@ export function dateRange(startStr, endStr) {
 export function todayString() {
   return toDateString(new Date());
 }
+
+/**
+ * Check if a date string is a weekend (Saturday = 6 or Sunday = 0)
+ */
+export function isWeekend(dateStr) {
+  const date = fromDateString(dateStr);
+  const day = date.getDay();
+  return day === 0 || day === 6;
+}

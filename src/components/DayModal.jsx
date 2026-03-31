@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { STATUS_COLORS } from './statusColors';
+import { isWeekend } from '../utils/dates';
 
 const STATUSES = ['green', 'blue', 'yellow', 'red'];
 const KEY_MAP = { '1': 'green', '2': 'blue', '3': 'yellow', '4': 'red' };
@@ -9,7 +10,10 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
   const [note, setNote] = useState(data?.note ?? '');
   const [todos, setTodos] = useState(data?.todos ?? []);
   const [newTodo, setNewTodo] = useState('');
+  const [workedWeekend, setWorkedWeekend] = useState(data?.workedWeekend ?? false);
   const noteRef = useRef(null);
+
+  const isWeekendDay = isWeekend(dateStr);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -36,7 +40,7 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
       return;
     }
 
-    onSave(dateStr, { status, note: note.trim(), todos });
+    onSave(dateStr, { status, note: note.trim(), todos, workedWeekend: isWeekendDay ? workedWeekend : undefined });
     onClose();
   }
 
@@ -83,6 +87,20 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
         </div>
 
         <p className="modal-hint">Click a color or press <kbd>1</kbd>–<kbd>4</kbd></p>
+
+        {isWeekendDay && (
+          <div className="weekend-section">
+            <label className="weekend-checkbox-label">
+              <input
+                type="checkbox"
+                className="weekend-checkbox"
+                checked={workedWeekend}
+                onChange={(e) => setWorkedWeekend(e.target.checked)}
+              />
+              <span className="weekend-text">I worked during this weekend</span>
+            </label>
+          </div>
+        )}
 
         <div className="status-grid">
           {STATUSES.map((s, i) => (

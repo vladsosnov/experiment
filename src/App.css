@@ -391,6 +391,7 @@
   height: 50px;
   margin: 0 auto;
   position: relative;
+  overflow: hidden;
 }
 .day-square:hover:not(.empty) {
   transform: scale(1.15);
@@ -410,6 +411,28 @@
 }
 .day-square.today {
   box-shadow: 0 0 0 2px #f8fafc;
+}
+
+/* Split color halves for worked weekend + status */
+.day-square.split {
+  background: transparent !important;
+}
+
+.split-half {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+}
+
+.split-left {
+  left: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+.split-right {
+  right: 0;
+  border-radius: 0 4px 4px 0;
 }
 
 /* Red dot indicator for todos */
@@ -548,6 +571,37 @@
   font-size: 0.75rem;
   font-family: monospace;
   color: #94a3b8;
+}
+
+/* ── Weekend Section ──────────────────────────────────────────── */
+.weekend-section {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(168, 85, 247, 0.04));
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+
+.weekend-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.weekend-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #a855f7;
+  flex-shrink: 0;
+}
+
+.weekend-text {
+  font-size: 0.95rem;
+  color: #e9d5ff;
+  font-weight: 500;
 }
 
 .status-grid {
