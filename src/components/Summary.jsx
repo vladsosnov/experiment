@@ -48,18 +48,21 @@ export default function Summary({ goal, days }) {
     prevGreenStreakRef.current = longestGreenStreak;
   }, [longestGreenStreak]);
 
-  const counts = { green: 0, blue: 0, yellow: 0, red: 0 };
-  Object.values(days).forEach(({ status }) => {
+  const counts = { green: 0, blue: 0, yellow: 0, red: 0, purple: 0 };
+  Object.values(days).forEach(({ status, workedWeekend }) => {
     if (status && counts[status] !== undefined) counts[status]++;
+    if (workedWeekend) counts.purple++;
   });
   // Only count days with status as "filled"
   const filled = Object.values(days).filter(d => d.status).length;
 
-  const bars = Object.entries(counts).map(([s, n]) => ({
-    status: s,
-    pct: filled > 0 ? Math.round((n / filled) * 100) : 0,
-    count: n,
-  }));
+  const bars = Object.entries(counts)
+    .filter(([s]) => s !== 'purple' || counts.purple > 0)
+    .map(([s, n]) => ({
+      status: s,
+      pct: filled > 0 ? Math.round((n / filled) * 100) : 0,
+      count: n,
+    }));
 
   return (
     <div className="summary-section">
@@ -93,14 +96,22 @@ export default function Summary({ goal, days }) {
                 style={{ background: STATUS_COLORS[status].bg }}
               />
               <span className="mini-bar-name">{STATUS_COLORS[status].label}</span>
-              <div className="mini-bar-track">
-                <div
-                  className="mini-bar-fill"
-                  style={{ width: `${pct}%`, background: STATUS_COLORS[status].bg }}
-                />
-              </div>
-              <span className="mini-bar-pct">{pct}%</span>
-              <span className="mini-bar-count">({count})</span>
+              {status === 'purple' ? (
+                <>
+                  <span className="mini-bar-count" style={{ color: STATUS_COLORS.purple.bg, gridColumn: '3 / 6' }}>({count})</span>
+                </>
+              ) : (
+                <>
+                  <div className="mini-bar-track">
+                    <div
+                      className="mini-bar-fill"
+                      style={{ width: `${pct}%`, background: STATUS_COLORS[status].bg }}
+                    />
+                  </div>
+                  <span className="mini-bar-pct">{pct}%</span>
+                  <span className="mini-bar-count">({count})</span>
+                </>
+              )}
             </div>
           ))}
         </div>
