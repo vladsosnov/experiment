@@ -1,33 +1,39 @@
-const GOAL_KEY = 'goaltracker_goal';
-const DAYS_KEY = 'goaltracker_days';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 
-export function loadGoal() {
+const GOAL_DOC = 'data/goal';
+const DAYS_DOC = 'data/days';
+
+export async function loadGoal() {
   try {
-    const raw = localStorage.getItem(GOAL_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const snap = await getDoc(doc(db, 'data', 'goal'));
+    return snap.exists() ? snap.data().value : null;
   } catch {
     return null;
   }
 }
 
-export function saveGoal(goal) {
-  localStorage.setItem(GOAL_KEY, JSON.stringify(goal));
+export async function saveGoal(goal) {
+  await setDoc(doc(db, 'data', 'goal'), { value: goal });
 }
 
-export function loadDays() {
+export async function loadDays() {
   try {
-    const raw = localStorage.getItem(DAYS_KEY);
-    return raw ? JSON.parse(raw) : {};
+    const snap = await getDoc(doc(db, 'data', 'days'));
+    return snap.exists() ? snap.data().value : {};
   } catch {
     return {};
   }
 }
 
-export function saveDays(days) {
-  localStorage.setItem(DAYS_KEY, JSON.stringify(days));
+export async function saveDays(days) {
+  const clean = JSON.parse(JSON.stringify(days));
+  await setDoc(doc(db, 'data', 'days'), { value: clean });
 }
 
-export function clearAll() {
-  localStorage.removeItem(GOAL_KEY);
-  localStorage.removeItem(DAYS_KEY);
+export async function clearAll() {
+  await Promise.all([
+    deleteDoc(doc(db, 'data', 'goal')),
+    deleteDoc(doc(db, 'data', 'days')),
+  ]);
 }

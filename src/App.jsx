@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import GoalSetup from './components/GoalSetup';
 import CalendarGrid from './components/CalendarGrid';
 import ProgressBar from './components/ProgressBar';
@@ -10,20 +10,20 @@ import GoalEditModal from './components/GoalEditModal';
 import NotesTable from './components/NotesTable';
 import TodoInsights from './components/TodoInsights';
 import WeeklyReview from './components/WeeklyReview';
+import PasswordModal from './components/PasswordModal';
 import { loadGoal, saveGoal, loadDays, saveDays, clearAll } from './utils/storage';
 import { dateRange, todayString } from './utils/dates';
 import { getQuote } from './utils/quotes';
 import { exportData, importData } from './utils/backup';
 import './App.css';
 
-function getInitialState() {
-  const goal = loadGoal();
-  const days = loadDays();
-  return { goal, days };
-}
+const SESSION_KEY = 'goaltracker_unlocked';
 
 export default function App() {
-  const [{ goal, days }, setState] = useState(getInitialState);
+  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
+  const [goal, setGoal] = useState(null);
+  const [days, setDays] = useState({});
+  const [loading, setLoading] = useState(true);
   const [modalDate, setModalDate] = useState(null);
   const [toast, setToast] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -32,21 +32,40 @@ export default function App() {
 
   const today = todayString();
 
-  function handleGoalSave(newGoal) {
-    saveGoal(newGoal);
-    setState({ goal: newGoal, days: {} });
+  useEffect(() => {
+    if (!unlocked) { setLoading(false); return; }
+    setLoading(true);
+    Promise.all([loadGoal(), loadDays()]).then(([g, d]) => {
+      setGoal(g);
+      setDays(d);
+      setLoading(false);
+    }).catch((err) => {
+      console.error('Firestore load error:', err);
+      setLoading(false);
+    });
+  }, [unlocked]);
+
+  function handleUnlock() {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    setUnlocked(true);
+  }
+
+  async function handleGoalSave(newGoal) {
+    await saveGoal(newGoal);
+    await saveDays({});
+    setGoal(newGoal);
+    setDays({});
   }
 
   const handleDayClick = useCallback((dateStr) => {
     setModalDate(dateStr);
   }, []);
 
-  function handleDaySave(dateStr, data) {
+  async function handleDaySave(dateStr, data) {
     const next = { ...days };
     if (data === null) {
       delete next[dateStr];
     } else {
-      // Save day if it has status OR todos
       const hasContent = data.status || (data.todos && data.todos.length > 0);
       if (hasContent) {
         next[dateStr] = data;
@@ -57,13 +76,13 @@ export default function App() {
         delete next[dateStr];
       }
     }
-    saveDays(next);
-    setState((s) => ({ ...s, days: next }));
+    await saveDays(next);
+    setDays(next);
   }
 
-  function handleGoalEdit(updatedGoal) {
-    saveGoal(updatedGoal);
-    setState((s) => ({ ...s, goal: updatedGoal }));
+  async function handleGoalEdit(updatedGoal) {
+    await saveGoal(updatedGoal);
+    setGoal(updatedGoal);
   }
 
   function handleExport() {
@@ -79,16 +98,29 @@ export default function App() {
     const file = e.target.files?.[0];
     if (!file) return;
     importData(file)
-      .then(({ goal: g, days: d }) => setState({ goal: g, days: d }))
+      .then(({ goal: g, days: d }) => {
+        saveGoal(g);
+        saveDays(d);
+        setGoal(g);
+        setDays(d);
+      })
       .catch((msg) => setImportError(msg));
-    // Reset input so same file can be re-selected
     e.target.value = '';
   }
 
-  function handleReset() {
+  async function handleReset() {
     if (!confirm('Reset all data? This cannot be undone.')) return;
-    clearAll();
-    setState({ goal: null, days: {} });
+    await clearAll();
+    setGoal(null);
+    setDays({});
+  }
+
+  if (!unlocked) {
+    return <PasswordModal onUnlock={handleUnlock} />;
+  }
+
+  if (loading) {
+    return <div className="app-loading">Loading...</div>;
   }
 
   const modalDayNumber = modalDate && goal

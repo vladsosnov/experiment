@@ -10,6 +10,8 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
   const [note, setNote] = useState(data?.note ?? '');
   const [todos, setTodos] = useState(data?.todos ?? []);
   const [newTodo, setNewTodo] = useState('');
+  const [editingTodoId, setEditingTodoId] = useState(null);
+  const [editingTodoText, setEditingTodoText] = useState('');
   const [workedWeekend, setWorkedWeekend] = useState(data?.workedWeekend ?? false);
   const noteRef = useRef(null);
 
@@ -26,22 +28,21 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
   }, [onClose]);
 
   function handleSave() {
-    // Allow saving todos independently OR status+note together
-    const hasTodos = todos.length > 0;
     const hasStatus = status !== null;
-
-    // If status is selected, note is required
-    if (hasStatus && !note.trim()) {
-      return;
-    }
-
-    // Must have either todos or status to save
-    if (!hasTodos && !hasStatus) {
-      return;
-    }
-
-    onSave(dateStr, { status, note: note.trim(), todos, workedWeekend: isWeekendDay ? workedWeekend : undefined });
+    if (hasStatus && !note.trim()) return;
+    onSave(dateStr, { status, note: note.trim(), todos, workedWeekend: isWeekendDay ? workedWeekend : false });
     onClose();
+  }
+
+  function handleStartEditTodo(todo) {
+    setEditingTodoId(todo.id);
+    setEditingTodoText(todo.text);
+  }
+
+  function handleConfirmEditTodo(id) {
+    if (!editingTodoText.trim()) return;
+    setTodos(todos.map(t => t.id === id ? { ...t, text: editingTodoText.trim() } : t));
+    setEditingTodoId(null);
   }
 
   function handleAddTodo() {
@@ -155,7 +156,23 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
                     checked={todo.completed}
                     onChange={() => handleToggleTodo(todo.id)}
                   />
-                  <span className="todo-text">{todo.text}</span>
+                  {editingTodoId === todo.id ? (
+                    <input
+                      className="todo-input todo-edit-input"
+                      value={editingTodoText}
+                      onChange={(e) => setEditingTodoText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleConfirmEditTodo(todo.id);
+                        if (e.key === 'Escape') setEditingTodoId(null);
+                      }}
+                      onBlur={() => handleConfirmEditTodo(todo.id)}
+                      autoFocus
+                    />
+                  ) : (
+                    <span className="todo-text" onDoubleClick={() => handleStartEditTodo(todo)}>
+                      {todo.text}
+                    </span>
+                  )}
                   <button className="btn-delete-todo" onClick={() => handleDeleteTodo(todo.id)}>
                     ✕
                   </button>
@@ -174,7 +191,7 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
           <button
             className="btn-primary"
             onClick={handleSave}
-            disabled={(status && !note.trim()) || (!status && !todos.length)}
+            disabled={status && !note.trim()}
           >
             Save
           </button>
