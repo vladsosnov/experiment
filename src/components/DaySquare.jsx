@@ -1,8 +1,11 @@
 import { STATUS_COLORS } from './statusColors';
 
 export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture, isLastDay, onClick }) {
-  // Extract day of month from dateStr (YYYY-MM-DD)
-  const dayOfMonth = parseInt(dateStr.split('-')[2], 10);
+  // Extract day/month from dateStr (YYYY-MM-DD)
+  const parts = dateStr.split('-');
+  const dayOfMonth = parseInt(parts[2], 10);
+  const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthName = MONTH_NAMES[parseInt(parts[1], 10) - 1];
   const status = data?.status;
   const note = data?.note;
   const hasIncompleteTodos = data?.todos && data.todos.some(t => !t.completed);
@@ -46,7 +49,7 @@ export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture,
         </>
       )}
       {hasIncompleteTodos && <span className="todo-indicator" />}
-      <span className="day-date">{dayOfMonth}</span>
+      <span className="day-date">{monthName} {dayOfMonth}</span>
       <span className="day-number">{dayNumber}</span>
     </div>
   );

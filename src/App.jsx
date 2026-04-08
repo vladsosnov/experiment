@@ -9,6 +9,7 @@ import QuoteToast from './components/QuoteToast';
 import GoalEditModal from './components/GoalEditModal';
 import NotesTable from './components/NotesTable';
 import TodoInsights from './components/TodoInsights';
+import AllTodos from './components/AllTodos';
 import WeeklyReview from './components/WeeklyReview';
 import PasswordModal from './components/PasswordModal';
 import { loadGoal, saveGoal, loadDays, saveDays, clearAll } from './utils/storage';
@@ -173,6 +174,7 @@ export default function App() {
         {days[goal.endDate] && <Congrats goal={goal} days={days} />}
         <ProgressBar goal={goal} days={days} />
         <TodoInsights goal={goal} days={days} />
+        <AllTodos goal={goal} days={days} />
         <WeeklyReview goal={goal} days={days} />
         <NotesTable goal={goal} days={days} />
         <Summary goal={goal} days={days} />

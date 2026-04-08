@@ -1132,6 +1132,124 @@
   font-size: 0.85rem;
 }
 
+/* ── All Todos Section ────────────────────────────────────────── */
+.all-todos-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.all-todos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.all-todos-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.all-todos-filters {
+  display: flex;
+  gap: 4px;
+  background: #0f172a;
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.all-todos-filter {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.all-todos-filter:hover { color: #94a3b8; }
+.all-todos-filter.active {
+  background: #334155;
+  color: #f1f5f9;
+}
+
+.all-todos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.all-todos-list::-webkit-scrollbar {
+  width: 5px;
+}
+.all-todos-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.all-todos-list::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+
+.all-todos-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 10px 12px;
+  transition: opacity 0.2s;
+}
+
+.all-todos-item.completed {
+  opacity: 0.55;
+}
+
+.all-todos-status {
+  font-size: 0.9rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+.all-todos-status.done { color: #22c55e; }
+.all-todos-status.pending { color: #64748b; }
+
+.all-todos-text {
+  flex: 1;
+  font-size: 0.88rem;
+  color: #e2e8f0;
+}
+
+.all-todos-item.completed .all-todos-text {
+  text-decoration: line-through;
+  color: #94a3b8;
+}
+
+.all-todos-meta {
+  font-size: 0.75rem;
+  color: #64748b;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.all-todos-empty {
+  color: #475569;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 16px 0;
+  margin: 0;
+}
+
 /* ── Summary / Streaks ─────────────────────────────────────────── */
 .summary-section {
   display: flex;
