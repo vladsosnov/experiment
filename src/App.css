@@ -523,6 +523,17 @@
 }
 
 /* Day number inside square */
+.day-date {
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: rgba(248, 250, 252, 0.4);
+  pointer-events: none;
+  user-select: none;
+}
+
 .day-number {
   position: absolute;
   bottom: 4px;
@@ -592,7 +603,23 @@
   padding: 28px;
   width: 100%;
   max-width: 540px;
+  max-height: 85vh;
+  overflow-y: auto;
   animation: slideUp 0.18s ease;
+}
+
+.modal::-webkit-scrollbar {
+  width: 6px;
+}
+.modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+.modal::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 @keyframes slideUp {
