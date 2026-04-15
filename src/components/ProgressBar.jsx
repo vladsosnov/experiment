@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { STATUS_COLORS } from './statusColors';
 import { dateRange, todayString } from '../utils/dates';
+import { formatProgressPct } from '../utils/progress';
 
 export default function ProgressBar({ goal, days }) {
   const total = goal.totalDays;
@@ -17,7 +18,7 @@ export default function ProgressBar({ goal, days }) {
   });
   // Only count days with status as "filled"
   const filled = Object.values(days).filter(d => d.status).length;
-  const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
+  const pct = formatProgressPct(filled, total);
 
   return (
     <div className="progress-section">
