@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { dateRange } from '../utils/dates';
 
 export default function AllTodos({ goal, days }) {
-  const [filter, setFilter] = useState('all'); // 'all' | 'pending' | 'completed'
+  const [filter, setFilter] = useState('pending'); // 'all' | 'pending' | 'completed'
 
   const todos = useMemo(() => {
     const allDates = dateRange(goal.startDate, goal.endDate);

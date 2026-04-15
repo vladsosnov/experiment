@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { STATUS_COLORS } from './statusColors';
 import { isWeekend } from '../utils/dates';
+import { reorderTodos } from '../utils/todos';
 
 const STATUSES = ['green', 'blue', 'yellow', 'red'];
 const KEY_MAP = { '1': 'green', '2': 'blue', '3': 'yellow', '4': 'red' };
@@ -12,6 +13,7 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
   const [newTodo, setNewTodo] = useState('');
   const [editingTodoId, setEditingTodoId] = useState(null);
   const [editingTodoText, setEditingTodoText] = useState('');
+  const [draggedTodoId, setDraggedTodoId] = useState(null);
   const [workedWeekend, setWorkedWeekend] = useState(data?.workedWeekend ?? false);
   const noteRef = useRef(null);
 
@@ -57,6 +59,16 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
 
   function handleDeleteTodo(id) {
     setTodos(todos.filter(t => t.id !== id));
+  }
+
+  function handleDragStartTodo(id) {
+    setDraggedTodoId(id);
+  }
+
+  function handleDropTodo(targetId) {
+    if (draggedTodoId === null) return;
+    setTodos((currentTodos) => reorderTodos(currentTodos, draggedTodoId, targetId));
+    setDraggedTodoId(null);
   }
 
   function handleClear() {
@@ -149,7 +161,22 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
           {todos.length > 0 && (
             <ul className="todo-list">
               {todos.map((todo) => (
-                <li key={todo.id} className={`todo-item${todo.completed ? ' completed' : ''}`}>
+                <li
+                  key={todo.id}
+                  className={`todo-item${todo.completed ? ' completed' : ''}${draggedTodoId === todo.id ? ' dragging' : ''}`}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => handleDropTodo(todo.id)}
+                >
+                  <button
+                    type="button"
+                    className="todo-drag-handle"
+                    draggable
+                    aria-label={`Drag todo ${todo.text}`}
+                    onDragStart={() => handleDragStartTodo(todo.id)}
+                    onDragEnd={() => setDraggedTodoId(null)}
+                  >
+                    ⋮⋮
+                  </button>
                   <input
                     type="checkbox"
                     className="todo-checkbox"

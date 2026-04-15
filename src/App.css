@@ -851,8 +851,27 @@
   transition: opacity 0.2s;
 }
 
+.todo-item.dragging {
+  opacity: 0.4;
+}
+
 .todo-item.completed {
   opacity: 0.6;
+}
+
+.todo-drag-handle {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: grab;
+  flex-shrink: 0;
+  font-size: 1rem;
+  letter-spacing: -1px;
+  padding: 2px 4px;
+}
+
+.todo-drag-handle:active {
+  cursor: grabbing;
 }
 
 .todo-checkbox {
