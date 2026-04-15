@@ -1,16 +1,17 @@
 import { loadGoal, loadDays, saveGoal, saveDays } from './storage';
 
-export function exportData() {
+export async function exportData() {
+  const [goal, days] = await Promise.all([loadGoal(), loadDays()]);
   const payload = {
     version: 1,
     exportedAt: new Date().toISOString(),
-    goal: loadGoal(),
-    days: loadDays(),
+    goal,
+    days,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const goalTitle = payload.goal?.title ?? 'goal-tracker';
+  const goalTitle = goal?.title ?? 'goal-tracker';
   const date = new Date().toISOString().slice(0, 10);
   a.href = url;
   a.download = `${goalTitle.replace(/\s+/g, '-').toLowerCase()}-backup-${date}.json`;

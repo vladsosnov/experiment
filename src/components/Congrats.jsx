@@ -9,7 +9,7 @@ const MESSAGES = [
   { headline: 'This is what discipline looks like.', body: "Not perfect — consistent. And consistent beats perfect every time." },
 ];
 
-function pickMessage(days, goal) {
+function pickMessage(days) {
   // Pick deterministically based on green day % so it feels personal
   const count = Object.keys(days).length;
   const idx = count % MESSAGES.length;
@@ -34,7 +34,7 @@ function fireConfetti() {
 }
 
 export default function Congrats({ goal, days }) {
-  const { headline, body } = pickMessage(days, goal);
+  const { headline, body } = pickMessage(days);
 
   useEffect(() => {
     fireConfetti();

@@ -24,7 +24,7 @@ export default function App() {
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
   const [goal, setGoal] = useState(null);
   const [days, setDays] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
   const [modalDate, setModalDate] = useState(null);
   const [toast, setToast] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -34,8 +34,7 @@ export default function App() {
   const today = todayString();
 
   useEffect(() => {
-    if (!unlocked) { setLoading(false); return; }
-    setLoading(true);
+    if (!unlocked) return;
     Promise.all([loadGoal(), loadDays()]).then(([g, d]) => {
       setGoal(g);
       setDays(d);
@@ -48,6 +47,7 @@ export default function App() {
 
   function handleUnlock() {
     sessionStorage.setItem(SESSION_KEY, '1');
+    setLoading(true);
     setUnlocked(true);
   }
 
@@ -86,8 +86,8 @@ export default function App() {
     setGoal(updatedGoal);
   }
 
-  function handleExport() {
-    exportData();
+  async function handleExport() {
+    await exportData();
   }
 
   function handleImportClick() {
