@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { getCongratsStats } from '../utils/congrats';
 
 const MESSAGES = [
   { headline: 'You did it.', body: "Every single day was a choice. You kept choosing to show up. That's rare — and it's everything." },
@@ -35,17 +36,11 @@ function fireConfetti() {
 
 export default function Congrats({ goal, days }) {
   const { headline, body } = pickMessage(days);
+  const { loggedDays, superDays, strongPct } = getCongratsStats(days, goal.totalDays);
 
   useEffect(() => {
     fireConfetti();
   }, []);
-
-  const counts = { green: 0, blue: 0, yellow: 0, red: 0 };
-  Object.values(days).forEach(({ status }) => {
-    if (status && counts[status] !== undefined) counts[status]++;
-  });
-  const total = goal.totalDays;
-  const superPct = Math.round(((counts.green + counts.blue) / total) * 100);
 
   return (
     <div className="congrats-banner">
@@ -58,17 +53,17 @@ export default function Congrats({ goal, days }) {
         </div>
         <div className="congrats-stats">
           <div className="cstat">
-            <span className="cstat-val">{total}</span>
+            <span className="cstat-val">{loggedDays}</span>
             <span className="cstat-label">days logged</span>
           </div>
           <div className="cstat-divider" />
           <div className="cstat">
-            <span className="cstat-val">{counts.green}</span>
+            <span className="cstat-val">{superDays}</span>
             <span className="cstat-label">super days</span>
           </div>
           <div className="cstat-divider" />
           <div className="cstat">
-            <span className="cstat-val">{superPct}%</span>
+            <span className="cstat-val">{strongPct}%</span>
             <span className="cstat-label">strong days</span>
           </div>
         </div>

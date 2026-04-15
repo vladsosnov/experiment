@@ -5,6 +5,7 @@ import ProgressBar from './components/ProgressBar';
 import Summary from './components/Summary';
 import DayModal from './components/DayModal';
 import Congrats from './components/Congrats';
+import { hasCompletedGoal } from './utils/congrats';
 import QuoteToast from './components/QuoteToast';
 import GoalEditModal from './components/GoalEditModal';
 import NotesTable from './components/NotesTable';
@@ -16,6 +17,7 @@ import { loadGoal, saveGoal, loadDays, saveDays, clearAll } from './utils/storag
 import { dateRange, todayString } from './utils/dates';
 import { getQuote } from './utils/quotes';
 import { exportData, importData } from './utils/backup';
+import { applySeededPlanningTodo, normalizeSavedDay } from './utils/seededTodos';
 import './App.css';
 
 const SESSION_KEY = 'goaltracker_unlocked';
@@ -36,8 +38,12 @@ export default function App() {
   useEffect(() => {
     if (!unlocked) return;
     Promise.all([loadGoal(), loadDays()]).then(([g, d]) => {
+      const normalizedDays = applySeededPlanningTodo(g, d);
       setGoal(g);
-      setDays(d);
+      setDays(normalizedDays);
+      if (g && normalizedDays !== d) {
+        saveDays(normalizedDays);
+      }
       setLoading(false);
     }).catch((err) => {
       console.error('Firestore load error:', err);
@@ -52,10 +58,11 @@ export default function App() {
   }
 
   async function handleGoalSave(newGoal) {
+    const seededDays = applySeededPlanningTodo(newGoal, {});
     await saveGoal(newGoal);
-    await saveDays({});
+    await saveDays(seededDays);
     setGoal(newGoal);
-    setDays({});
+    setDays(seededDays);
   }
 
   const handleDayClick = useCallback((dateStr) => {
@@ -64,26 +71,26 @@ export default function App() {
 
   async function handleDaySave(dateStr, data) {
     const next = { ...days };
-    if (data === null) {
+    const normalizedDay = normalizeSavedDay(dateStr, data);
+    if (normalizedDay === null) {
       delete next[dateStr];
     } else {
-      const hasContent = data.status || (data.todos && data.todos.length > 0);
-      if (hasContent) {
-        next[dateStr] = data;
-        if (data.status) {
-          setToast({ quote: getQuote(data.status), status: data.status });
-        }
-      } else {
-        delete next[dateStr];
+      next[dateStr] = normalizedDay;
+      if (data?.status) {
+        setToast({ quote: getQuote(data.status), status: data.status });
       }
     }
-    await saveDays(next);
-    setDays(next);
+    const normalizedDays = applySeededPlanningTodo(goal, next);
+    await saveDays(normalizedDays);
+    setDays(normalizedDays);
   }
 
   async function handleGoalEdit(updatedGoal) {
+    const normalizedDays = applySeededPlanningTodo(updatedGoal, days);
     await saveGoal(updatedGoal);
+    await saveDays(normalizedDays);
     setGoal(updatedGoal);
+    setDays(normalizedDays);
   }
 
   async function handleExport() {
@@ -100,10 +107,11 @@ export default function App() {
     if (!file) return;
     importData(file)
       .then(({ goal: g, days: d }) => {
+        const normalizedDays = applySeededPlanningTodo(g, d);
         saveGoal(g);
-        saveDays(d);
+        saveDays(normalizedDays);
         setGoal(g);
-        setDays(d);
+        setDays(normalizedDays);
       })
       .catch((msg) => setImportError(msg));
     e.target.value = '';
@@ -171,14 +179,14 @@ export default function App() {
       )}
 
       <main className="app-main">
-        {days[goal.endDate] && <Congrats goal={goal} days={days} />}
+        {hasCompletedGoal(goal, days) && <Congrats goal={goal} days={days} />}
         <ProgressBar goal={goal} days={days} />
+        <CalendarGrid goal={goal} days={days} onDayClick={handleDayClick} />
         <TodoInsights goal={goal} days={days} />
         <AllTodos goal={goal} days={days} />
         <WeeklyReview goal={goal} days={days} />
         <NotesTable goal={goal} days={days} />
         <Summary goal={goal} days={days} />
-        <CalendarGrid goal={goal} days={days} onDayClick={handleDayClick} />
       </main>
 
       {toast && (
