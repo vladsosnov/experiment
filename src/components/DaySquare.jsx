@@ -1,4 +1,6 @@
 import { STATUS_COLORS } from './statusColors';
+import { isHoliday } from '../utils/dates';
+import { countIncompleteTodos } from '../utils/todos';
 
 export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture, isLastDay, onClick }) {
   // Extract day/month from dateStr (YYYY-MM-DD)
@@ -8,21 +10,29 @@ export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture,
   const monthName = MONTH_NAMES[parseInt(parts[1], 10) - 1];
   const status = data?.status;
   const note = data?.note;
-  const hasIncompleteTodos = data?.todos && data.todos.some(t => !t.completed);
+  const incompleteTodoCount = countIncompleteTodos(data?.todos);
+  const hasIncompleteTodos = incompleteTodoCount > 0;
   const workedWeekend = data?.workedWeekend;
+  const holiday = isHoliday(dateStr);
 
   // Determine if we need split colors (worked weekend + status selected)
   const isSplit = workedWeekend && status;
 
   // For non-split squares, use original logic
-  const bg = isSplit ? 'transparent' : (workedWeekend ? STATUS_COLORS.purple.bg : (status ? STATUS_COLORS[status].bg : (isFuture ? '#1e293b' : '#334155')));
+  const bg = isSplit
+    ? 'transparent'
+    : (workedWeekend
+      ? STATUS_COLORS.purple.bg
+      : (status
+        ? STATUS_COLORS[status].bg
+        : (holiday ? '#f9a8d4' : (isFuture ? '#1e293b' : '#334155'))));
   const opacity = isFuture ? 0.35 : 1;
 
   let borderStyle = { background: bg, border: '1px solid #f8fafc' };
 
   const label = workedWeekend
     ? (status ? `${STATUS_COLORS.purple.label} + ${STATUS_COLORS[status].label}` : STATUS_COLORS.purple.label)
-    : (status ? STATUS_COLORS[status].label : (isToday ? 'Today' : `Day ${dayNumber}`));
+    : (status ? STATUS_COLORS[status].label : (holiday ? 'Holiday' : (isToday ? 'Today' : `Day ${dayNumber}`)));
   const tooltip = [
     `Day ${dayNumber} — ${dateStr}`,
     label,
@@ -48,7 +58,7 @@ export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture,
           <span className="split-half split-right" style={{ background: STATUS_COLORS[status].bg }} />
         </>
       )}
-      {hasIncompleteTodos && <span className="todo-indicator" />}
+      {hasIncompleteTodos && <span className="todo-indicator">{incompleteTodoCount}</span>}
       <span className="day-date">{monthName} {dayOfMonth}</span>
       <span className="day-number">{dayNumber}</span>
     </div>

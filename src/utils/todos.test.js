@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { reorderTodos } from './todos';
+import { countIncompleteTodos, reorderTodos } from './todos';
 
 describe('reorderTodos', () => {
   const todos = [
@@ -16,5 +16,20 @@ describe('reorderTodos', () => {
     expect(reorderTodos(todos, 2, 2)).toBe(todos);
     expect(reorderTodos(todos, 9, 2)).toBe(todos);
     expect(reorderTodos(todos, 2, 9)).toBe(todos);
+  });
+});
+
+describe('countIncompleteTodos', () => {
+  it('counts only todos that are not completed', () => {
+    expect(countIncompleteTodos([
+      { id: 1, text: 'First', completed: false },
+      { id: 2, text: 'Second', completed: true },
+      { id: 3, text: 'Third', completed: false },
+    ])).toBe(2);
+  });
+
+  it('returns zero for missing or empty todo lists', () => {
+    expect(countIncompleteTodos()).toBe(0);
+    expect(countIncompleteTodos([])).toBe(0);
   });
 });

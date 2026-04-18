@@ -8,6 +8,12 @@ function toDateString(date) {
   return `${y}-${m}-${d}`;
 }
 
+export const HOLIDAY_DATES = [
+  '2026-05-01',
+  '2026-05-08',
+  '2026-06-28',
+];
+
 /**
  * Parse a "YYYY-MM-DD" string into a local-time Date (midnight).
  */
@@ -50,4 +56,22 @@ export function isWeekend(dateStr) {
   const date = fromDateString(dateStr);
   const day = date.getDay();
   return day === 0 || day === 6;
+}
+
+function getObservedHolidayDate(dateStr) {
+  const date = fromDateString(dateStr);
+
+  if (date.getDay() !== 0) {
+    return dateStr;
+  }
+
+  const observedDate = new Date(date);
+  observedDate.setDate(observedDate.getDate() + 1);
+  return toDateString(observedDate);
+}
+
+export const OBSERVED_HOLIDAY_DATES = HOLIDAY_DATES.map(getObservedHolidayDate);
+
+export function isHoliday(dateStr) {
+  return OBSERVED_HOLIDAY_DATES.includes(dateStr);
 }

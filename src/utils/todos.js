@@ -11,3 +11,7 @@ export function reorderTodos(todos, fromId, toId) {
   next.splice(toIndex, 0, moved);
   return next;
 }
+
+export function countIncompleteTodos(todos = []) {
+  return todos.filter((todo) => !todo.completed).length;
+}

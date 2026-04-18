@@ -465,7 +465,7 @@
   max-width: 50px;
   margin: 0 auto;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 .day-square:hover:not(.empty) {
   transform: scale(1.15);
@@ -509,16 +509,23 @@
   border-radius: 0 4px 4px 0;
 }
 
-/* Red dot indicator for todos */
+/* Pending todo counter */
 .todo-indicator {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 8px;
-  height: 8px;
-  background: #ef4444;
-  border-radius: 50%;
+  top: 0;
+  right: 0;
+  transform: translate(45%, -45%);
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: #f43f5e;
+  border-radius: 999px;
   border: 1px solid #0f172a;
+  color: #fff1f2;
+  font-size: 0.58rem;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
   z-index: 2;
 }
 
