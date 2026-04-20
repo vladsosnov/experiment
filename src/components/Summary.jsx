@@ -42,7 +42,7 @@ export default function Summary({ goal, days }) {
         particleCount: 150,
         spread: 80,
         origin: { y: 0.6 },
-        colors: ['#22c55e', '#86efac', '#bbf7d0', '#f0fdf4'],
+        colors: ['#50C878', '#50C878', '#50C878', '#50C878'],
       });
     }
     prevGreenStreakRef.current = longestGreenStreak;

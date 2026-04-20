@@ -143,7 +143,7 @@ export default function WeeklyReview({ goal, days }) {
                 className="week-bar-fill"
                 style={{
                   width: `${week.percentage}%`,
-                  background: week.percentage >= 70 ? '#22c55e' : week.percentage >= 50 ? '#3b82f6' : '#eab308'
+                  background: week.percentage >= 70 ? '#50C878' : week.percentage >= 50 ? '#6395EE' : '#FFCE1B'
                 }}
               />
             </div>

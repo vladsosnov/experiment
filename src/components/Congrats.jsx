@@ -24,7 +24,7 @@ function fireConfetti() {
       spread: 60,
       angle,
       origin,
-      colors: ['#22c55e', '#3b82f6', '#eab308', '#a855f7', '#f8fafc'],
+      colors: ['#50C878', '#6395EE', '#FFCE1B', '#a855f7', '#f8fafc'],
     });
   burst({ x: 0.2, y: 0.6 }, 60);
   setTimeout(() => burst({ x: 0.8, y: 0.6 }, 120), 200);

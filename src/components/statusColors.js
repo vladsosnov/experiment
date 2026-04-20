@@ -1,7 +1,7 @@
 export const STATUS_COLORS = {
-  green:  { bg: '#22c55e', label: 'Super day' },
-  blue:   { bg: '#3b82f6', label: 'Good day' },
-  yellow: { bg: '#eab308', label: 'Hard day' },
-  red:    { bg: '#ef4444', label: 'Not safe day' },
+  green:  { bg: '#50C878', label: 'Super day' },
+  blue:   { bg: '#6395EE', label: 'Good day' },
+  yellow: { bg: '#FFCE1B', label: 'Hard day' },
+  red:    { bg: '#FA5053', label: 'Not safe day' },
   purple: { bg: '#a855f7', label: 'Worked weekend' },
 };

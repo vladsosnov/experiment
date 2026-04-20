@@ -15,7 +15,7 @@ const SPECIAL_DAY_COLORS = {
     label: 'Day for me',
   },
   vacation: {
-    bg: '#f4b4cf',
+    bg: '#ED80E9',
     key: 'vacation',
     label: 'Vacation day',
   },

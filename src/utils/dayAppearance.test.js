@@ -15,7 +15,7 @@ describe('getDateSpecialDay', () => {
 
   it('marks configured holidays as vacation days', () => {
     expect(getDateSpecialDay('2026-05-01')).toEqual({
-      bg: '#f4b4cf',
+      bg: '#ED80E9',
       key: 'vacation',
       label: 'Vacation day',
     });
@@ -41,7 +41,7 @@ describe('getDaySquareAppearance', () => {
       isSplit: true,
       label: 'Day for me + Super day',
       splitLeftBg: '#c6a2f6',
-      splitRightBg: '#7fcf9a',
+      splitRightBg: '#50C878',
     });
   });
 
@@ -58,8 +58,8 @@ describe('getDaySquareAppearance', () => {
       bg: 'transparent',
       isSplit: true,
       label: 'Vacation day + Not safe day',
-      splitLeftBg: '#f4b4cf',
-      splitRightBg: '#ea8f97',
+      splitLeftBg: '#ED80E9',
+      splitRightBg: '#FA5053',
     });
   });
 
@@ -75,8 +75,8 @@ describe('getDaySquareAppearance', () => {
     ).toMatchObject({
       isSplit: true,
       label: 'Worked weekend + Good day',
-      splitLeftBg: '#c6a2f6',
-      splitRightBg: '#93bee8',
+      splitLeftBg: '#a855f7',
+      splitRightBg: '#6395EE',
     });
   });
 });
