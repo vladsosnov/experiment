@@ -536,7 +536,7 @@
   left: 5px;
   font-size: 0.6rem;
   font-weight: 500;
-  color: rgba(248, 250, 252, 0.4);
+  color: rgba(248, 250, 252, 0.9);
   pointer-events: none;
   user-select: none;
 }
@@ -548,7 +548,7 @@
   transform: translateX(-50%);
   font-size: 0.7rem;
   font-weight: 600;
-  color: rgba(248, 250, 252, 0.5);
+  color: rgba(248, 250, 252, 0.9);
   pointer-events: none;
   user-select: none;
 }
