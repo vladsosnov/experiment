@@ -11,6 +11,7 @@ function toDateString(date) {
 export const HOLIDAY_DATES = [
   '2026-05-01',
   '2026-05-08',
+  '2026-06-01',
   '2026-06-28',
 ];
 

@@ -6,6 +6,7 @@ describe('HOLIDAY_DATES', () => {
     expect(HOLIDAY_DATES).toEqual([
       '2026-05-01',
       '2026-05-08',
+      '2026-06-01',
       '2026-06-28',
     ]);
   });
@@ -15,12 +16,14 @@ describe('isHoliday', () => {
   it('returns true for configured holidays that are not moved', () => {
     expect(isHoliday('2026-05-01')).toBe(true);
     expect(isHoliday('2026-05-08')).toBe(true);
+    expect(isHoliday('2026-06-01')).toBe(true);
   });
 
   it('moves sunday holidays to monday for highlighting', () => {
     expect(OBSERVED_HOLIDAY_DATES).toEqual([
       '2026-05-01',
       '2026-05-08',
+      '2026-06-01',
       '2026-06-29',
     ]);
     expect(isHoliday('2026-06-28')).toBe(false);
