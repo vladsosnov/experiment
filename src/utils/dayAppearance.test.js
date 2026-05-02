@@ -27,7 +27,7 @@ describe('getDateSpecialDay', () => {
 });
 
 describe('getDaySquareAppearance', () => {
-  it('splits Day for me with a logged status', () => {
+  it('uses only the logged status color for submitted Day for me dates', () => {
     expect(
       getDaySquareAppearance({
         data: { status: 'green' },
@@ -37,15 +37,15 @@ describe('getDaySquareAppearance', () => {
         isToday: false,
       }),
     ).toMatchObject({
-      bg: 'transparent',
-      isSplit: true,
-      label: 'Day for me + Super day',
-      splitLeftBg: '#c6a2f6',
-      splitRightBg: '#50C878',
+      bg: '#50C878',
+      isSplit: false,
+      label: 'Super day',
+      splitLeftBg: null,
+      splitRightBg: null,
     });
   });
 
-  it('splits vacation days with a logged status', () => {
+  it('uses only the logged status color for submitted vacation days', () => {
     expect(
       getDaySquareAppearance({
         data: { status: 'red' },
@@ -55,11 +55,11 @@ describe('getDaySquareAppearance', () => {
         isToday: false,
       }),
     ).toMatchObject({
-      bg: 'transparent',
-      isSplit: true,
-      label: 'Vacation day + Not safe day',
-      splitLeftBg: '#ED80E9',
-      splitRightBg: '#FA5053',
+      bg: '#FA5053',
+      isSplit: false,
+      label: 'Not safe day',
+      splitLeftBg: null,
+      splitRightBg: null,
     });
   });
 

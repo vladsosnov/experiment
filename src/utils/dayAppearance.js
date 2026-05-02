@@ -39,7 +39,7 @@ export function getPrioritySpecialDay(dateStr, workedWeekend) {
 export function getDaySquareAppearance({ data, dateStr, dayNumber, isFuture, isToday }) {
   const status = data?.status ?? null;
   const workedWeekend = data?.workedWeekend ?? false;
-  const specialDay = getPrioritySpecialDay(dateStr, workedWeekend);
+  const specialDay = status && !workedWeekend ? null : getPrioritySpecialDay(dateStr, workedWeekend);
   const isSplit = Boolean(specialDay && status);
   const bg = isSplit
     ? 'transparent'
