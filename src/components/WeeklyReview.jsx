@@ -79,7 +79,7 @@ export default function WeeklyReview({ goal, days }) {
       trend = { diff, lastWeek: lastWeek.goodDays, prevWeek: prevWeek.goodDays };
     }
 
-    return { weeks, worstDay, trend };
+    return { weeks: weeks.reverse(), worstDay, trend };
   }, [goal, days]);
 
   if (!analysis) {

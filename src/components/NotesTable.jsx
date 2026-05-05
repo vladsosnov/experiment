@@ -23,7 +23,7 @@ export default function NotesTable({ goal, days }) {
       filtered = filtered.filter(r => r.data.todos && r.data.todos.some(t => !t.completed));
     }
 
-    return filtered;
+    return filtered.reverse();
   }, [goal, days, filter]);
 
   // Reset to page 1 if rows shrink and current page is out of range
