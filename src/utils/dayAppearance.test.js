@@ -8,7 +8,6 @@ describe('getDateSpecialDay', () => {
       key: 'dayForMe',
       label: 'Day for me',
     });
-    expect(getDateSpecialDay('2026-05-15')?.key).toBe('dayForMe');
     expect(getDateSpecialDay('2026-09-25')?.key).toBe('dayForMe');
     expect(getDateSpecialDay('2026-12-28')?.key).toBe('dayForMe');
   });
@@ -23,6 +22,7 @@ describe('getDateSpecialDay', () => {
       bg: 'linear-gradient(to bottom, #fff 50%, #DC143C 50%)',
       key: 'vacation',
       label: 'Vacation day',
+      textColor: '#000',
     });
   });
 

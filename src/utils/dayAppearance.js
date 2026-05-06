@@ -8,8 +8,8 @@ export const DAY_FOR_ME_DATES = [
 ];
 
 const FLAG_BACKGROUNDS = {
-  ukraine: 'linear-gradient(to bottom, #005BBB 50%, #FFD500 50%)',
-  poland: 'linear-gradient(to bottom, #fff 50%, #DC143C 50%)',
+  ukraine: { bg: 'linear-gradient(to bottom, #005BBB 50%, #FFD500 50%)' },
+  poland: { bg: 'linear-gradient(to bottom, #fff 50%, #DC143C 50%)', textColor: '#000' },
 };
 
 const SPECIAL_DAY_COLORS = {
@@ -40,10 +40,11 @@ export function getDateSpecialDay(dateStr) {
   if (DAY_FOR_ME_DATES.includes(dateStr)) return SPECIAL_DAY_COLORS.dayForMe;
   if (isHoliday(dateStr)) {
     const country = getHolidayCountry(dateStr);
-    const flagBg = country ? FLAG_BACKGROUNDS[country] : null;
+    const flag = country ? FLAG_BACKGROUNDS[country] : null;
     return {
       ...SPECIAL_DAY_COLORS.vacation,
-      bg: flagBg || SPECIAL_DAY_COLORS.vacation.bg,
+      bg: flag ? flag.bg : SPECIAL_DAY_COLORS.vacation.bg,
+      ...(flag?.textColor ? { textColor: flag.textColor } : {}),
     };
   }
   return null;
@@ -76,5 +77,6 @@ export function getDaySquareAppearance({ data, dateStr, dayNumber, isFuture, isT
     label,
     splitLeftBg: isSplit ? specialDay.bg : null,
     splitRightBg: isSplit ? STATUS_COLORS[status].bg : null,
+    textColor: specialDay?.textColor || null,
   };
 }

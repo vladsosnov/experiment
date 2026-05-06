@@ -466,6 +466,7 @@
   margin: 0 auto;
   position: relative;
   overflow: visible;
+  color: rgba(248, 250, 252, 0.9);
 }
 .day-square:hover:not(.empty) {
   transform: scale(1.15);
@@ -536,7 +537,7 @@
   left: 5px;
   font-size: 0.6rem;
   font-weight: 500;
-  color: rgba(248, 250, 252, 0.9);
+  color: inherit;
   pointer-events: none;
   user-select: none;
 }
@@ -548,7 +549,7 @@
   transform: translateX(-50%);
   font-size: 0.7rem;
   font-weight: 600;
-  color: rgba(248, 250, 252, 0.9);
+  color: inherit;
   pointer-events: none;
   user-select: none;
 }

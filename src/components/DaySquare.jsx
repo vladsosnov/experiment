@@ -10,7 +10,7 @@ export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture,
   const note = data?.note;
   const incompleteTodoCount = countIncompleteTodos(data?.todos);
   const hasIncompleteTodos = incompleteTodoCount > 0;
-  const { bg, isSplit, label, splitLeftBg, splitRightBg } = getDaySquareAppearance({
+  const { bg, isSplit, label, splitLeftBg, splitRightBg, textColor } = getDaySquareAppearance({
     data,
     dateStr,
     dayNumber,
@@ -19,7 +19,7 @@ export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture,
   });
   const opacity = isFuture ? 0.35 : 1;
 
-  let borderStyle = { background: bg, border: '1px solid #f8fafc' };
+  let borderStyle = { background: bg, border: '1px solid #f8fafc', ...(textColor ? { color: textColor } : {}) };
 
   const tooltip = [
     `Day ${dayNumber} — ${dateStr}`,
