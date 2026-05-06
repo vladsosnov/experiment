@@ -1,12 +1,16 @@
 import { STATUS_COLORS } from '../components/statusColors';
-import { isHoliday } from './dates';
+import { isHoliday, HOLIDAY_COUNTRY, OBSERVED_HOLIDAY_DATES, HOLIDAY_DATES } from './dates';
 
 export const DAY_FOR_ME_DATES = [
   '2026-02-16',
-  '2026-05-15',
   '2026-09-25',
   '2026-12-28',
 ];
+
+const FLAG_BACKGROUNDS = {
+  ukraine: 'linear-gradient(to bottom, #005BBB 50%, #FFD500 50%)',
+  poland: 'linear-gradient(to bottom, #fff 50%, #DC143C 50%)',
+};
 
 const SPECIAL_DAY_COLORS = {
   dayForMe: {
@@ -25,9 +29,23 @@ const SPECIAL_DAY_COLORS = {
   },
 };
 
+function getHolidayCountry(dateStr) {
+  const observedIdx = OBSERVED_HOLIDAY_DATES.indexOf(dateStr);
+  if (observedIdx === -1) return null;
+  const originalDate = HOLIDAY_DATES[observedIdx];
+  return HOLIDAY_COUNTRY[originalDate] || null;
+}
+
 export function getDateSpecialDay(dateStr) {
   if (DAY_FOR_ME_DATES.includes(dateStr)) return SPECIAL_DAY_COLORS.dayForMe;
-  if (isHoliday(dateStr)) return SPECIAL_DAY_COLORS.vacation;
+  if (isHoliday(dateStr)) {
+    const country = getHolidayCountry(dateStr);
+    const flagBg = country ? FLAG_BACKGROUNDS[country] : null;
+    return {
+      ...SPECIAL_DAY_COLORS.vacation,
+      bg: flagBg || SPECIAL_DAY_COLORS.vacation.bg,
+    };
+  }
   return null;
 }
 

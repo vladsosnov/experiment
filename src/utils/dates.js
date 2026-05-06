@@ -11,9 +11,22 @@ function toDateString(date) {
 export const HOLIDAY_DATES = [
   '2026-05-01',
   '2026-05-08',
+  '2026-05-15',
+  '2026-05-25',
   '2026-06-01',
-  '2026-06-28',
+  '2026-06-04',
+  '2026-06-29',
 ];
+
+export const HOLIDAY_COUNTRY = {
+  '2026-05-01': 'ukraine',
+  '2026-05-08': 'ukraine',
+  '2026-05-15': 'poland',
+  '2026-05-25': 'poland',
+  '2026-06-01': 'ukraine',
+  '2026-06-04': 'poland',
+  '2026-06-29': 'poland',
+};
 
 /**
  * Parse a "YYYY-MM-DD" string into a local-time Date (midnight).

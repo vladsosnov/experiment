@@ -13,9 +13,14 @@ describe('getDateSpecialDay', () => {
     expect(getDateSpecialDay('2026-12-28')?.key).toBe('dayForMe');
   });
 
-  it('marks configured holidays as vacation days', () => {
+  it('marks configured holidays as vacation days with flag backgrounds', () => {
     expect(getDateSpecialDay('2026-05-01')).toEqual({
-      bg: '#ED80E9',
+      bg: 'linear-gradient(to bottom, #005BBB 50%, #FFD500 50%)',
+      key: 'vacation',
+      label: 'Vacation day',
+    });
+    expect(getDateSpecialDay('2026-05-25')).toEqual({
+      bg: 'linear-gradient(to bottom, #fff 50%, #DC143C 50%)',
       key: 'vacation',
       label: 'Vacation day',
     });

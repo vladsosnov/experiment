@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { HOLIDAY_DATES, OBSERVED_HOLIDAY_DATES, isHoliday } from './dates';
 
 describe('HOLIDAY_DATES', () => {
-  it('contains the configured upcoming Ukrainian holidays', () => {
+  it('contains the configured upcoming holidays', () => {
     expect(HOLIDAY_DATES).toEqual([
       '2026-05-01',
       '2026-05-08',
+      '2026-05-15',
+      '2026-05-25',
       '2026-06-01',
-      '2026-06-28',
+      '2026-06-04',
+      '2026-06-29',
     ]);
   });
 });
@@ -23,10 +26,12 @@ describe('isHoliday', () => {
     expect(OBSERVED_HOLIDAY_DATES).toEqual([
       '2026-05-01',
       '2026-05-08',
+      '2026-05-15',
+      '2026-05-25',
       '2026-06-01',
+      '2026-06-04',
       '2026-06-29',
     ]);
-    expect(isHoliday('2026-06-28')).toBe(false);
     expect(isHoliday('2026-06-29')).toBe(true);
   });
 
