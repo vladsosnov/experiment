@@ -12,14 +12,12 @@ export const HOLIDAY_DATES = [
   '2026-05-01',
   '2026-05-08',
   '2026-05-15',
-  '2026-06-29',
 ];
 
 export const HOLIDAY_COUNTRY = {
   '2026-05-01': 'ukraine',
   '2026-05-08': 'ukraine',
   '2026-05-15': 'poland',
-  '2026-06-29': 'poland',
 };
 
 /**
