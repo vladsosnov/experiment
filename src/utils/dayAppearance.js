@@ -7,6 +7,11 @@ export const DAY_FOR_ME_DATES = [
   '2026-12-28',
 ];
 
+export const PERSONAL_VACATION_DATES = [
+  '2026-06-04',
+  '2026-06-05',
+];
+
 const FLAG_BACKGROUNDS = {
   ukraine: { bg: 'linear-gradient(to bottom, #005BBB 50%, #FFD500 50%)' },
   poland: { bg: 'linear-gradient(to bottom, #fff 50%, #DC143C 50%)', textColor: '#000' },
@@ -23,6 +28,11 @@ const SPECIAL_DAY_COLORS = {
     key: 'vacation',
     label: 'Vacation day',
   },
+  personalVacation: {
+    bg: '#c4b5fd',
+    key: 'personalVacation',
+    label: 'Vacation',
+  },
   workedWeekend: {
     ...STATUS_COLORS.purple,
     key: 'workedWeekend',
@@ -38,6 +48,7 @@ function getHolidayCountry(dateStr) {
 
 export function getDateSpecialDay(dateStr) {
   if (DAY_FOR_ME_DATES.includes(dateStr)) return SPECIAL_DAY_COLORS.dayForMe;
+  if (PERSONAL_VACATION_DATES.includes(dateStr)) return SPECIAL_DAY_COLORS.personalVacation;
   if (isHoliday(dateStr)) {
     const country = getHolidayCountry(dateStr);
     const flag = country ? FLAG_BACKGROUNDS[country] : null;
