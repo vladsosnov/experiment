@@ -9,9 +9,16 @@ export function reorderTodos(todos, fromId, toId) {
   const next = [...todos];
   const [moved] = next.splice(fromIndex, 1);
   next.splice(toIndex, 0, moved);
-  return next;
+  return groupTodosByCompletion(next);
 }
 
 export function countIncompleteTodos(todos = []) {
   return todos.filter((todo) => !todo.completed).length;
+}
+
+export function groupTodosByCompletion(todos = []) {
+  return [
+    ...todos.filter((todo) => !todo.completed),
+    ...todos.filter((todo) => todo.completed),
+  ];
 }

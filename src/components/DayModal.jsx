@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { STATUS_COLORS } from './statusColors';
 import { isWeekend } from '../utils/dates';
-import { reorderTodos } from '../utils/todos';
+import { groupTodosByCompletion, reorderTodos } from '../utils/todos';
 
 const STATUSES = ['green', 'blue', 'yellow', 'red'];
 const KEY_MAP = { '1': 'green', '2': 'blue', '3': 'yellow', '4': 'red' };
@@ -9,7 +9,7 @@ const KEY_MAP = { '1': 'green', '2': 'blue', '3': 'yellow', '4': 'red' };
 export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) {
   const [status, setStatus] = useState(data?.status ?? null);
   const [note, setNote] = useState(data?.note ?? '');
-  const [todos, setTodos] = useState(data?.todos ?? []);
+  const [todos, setTodos] = useState(() => groupTodosByCompletion(data?.todos ?? []));
   const [newTodo, setNewTodo] = useState('');
   const [editingTodoId, setEditingTodoId] = useState(null);
   const [editingTodoText, setEditingTodoText] = useState('');
@@ -32,7 +32,12 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
   function handleSave() {
     const hasStatus = status !== null;
     if (hasStatus && !note.trim()) return;
-    onSave(dateStr, { status, note: note.trim(), todos, workedWeekend: isWeekendDay ? workedWeekend : false });
+    onSave(dateStr, {
+      status,
+      note: note.trim(),
+      todos: groupTodosByCompletion(todos),
+      workedWeekend: isWeekendDay ? workedWeekend : false,
+    });
     onClose();
   }
 
@@ -43,22 +48,29 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
 
   function handleConfirmEditTodo(id) {
     if (!editingTodoText.trim()) return;
-    setTodos(todos.map(t => t.id === id ? { ...t, text: editingTodoText.trim() } : t));
+    setTodos((currentTodos) => groupTodosByCompletion(
+      currentTodos.map(t => t.id === id ? { ...t, text: editingTodoText.trim() } : t),
+    ));
     setEditingTodoId(null);
   }
 
   function handleAddTodo() {
     if (!newTodo.trim()) return;
-    setTodos([...todos, { id: Date.now(), text: newTodo.trim(), completed: false }]);
+    setTodos((currentTodos) => groupTodosByCompletion([
+      ...currentTodos,
+      { id: Date.now(), text: newTodo.trim(), completed: false },
+    ]));
     setNewTodo('');
   }
 
   function handleToggleTodo(id) {
-    setTodos(todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    setTodos((currentTodos) => groupTodosByCompletion(
+      currentTodos.map(t => t.id === id ? { ...t, completed: !t.completed } : t),
+    ));
   }
 
   function handleDeleteTodo(id) {
-    setTodos(todos.filter(t => t.id !== id));
+    setTodos((currentTodos) => groupTodosByCompletion(currentTodos.filter(t => t.id !== id)));
   }
 
   function handleDragStartTodo(id) {
