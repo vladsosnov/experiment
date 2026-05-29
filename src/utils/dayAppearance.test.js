@@ -24,6 +24,11 @@ describe('getDateSpecialDay', () => {
       label: 'Vacation day',
       textColor: '#000',
     });
+    expect(getDateSpecialDay('2026-06-29')).toEqual({
+      bg: 'linear-gradient(to bottom, #005BBB 50%, #FFD500 50%)',
+      key: 'vacation',
+      label: 'Vacation day',
+    });
   });
 
   it('returns null for regular dates', () => {
