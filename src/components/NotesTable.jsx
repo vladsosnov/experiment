@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { dateRange } from '../utils/dates';
 import { STATUS_COLORS } from './statusColors';
+import { countIncompleteTodos } from '../utils/todos';
 
 const PAGE_SIZE = 7;
 
@@ -20,7 +21,7 @@ export default function NotesTable({ goal, days }) {
     } else if (filter === 'red-yellow') {
       filtered = filtered.filter(r => r.data.status === 'red' || r.data.status === 'yellow');
     } else if (filter === 'todos') {
-      filtered = filtered.filter(r => r.data.todos && r.data.todos.some(t => !t.completed));
+      filtered = filtered.filter(r => countIncompleteTodos(r.data.todos) > 0);
     }
 
     return filtered.reverse();
@@ -40,24 +41,28 @@ export default function NotesTable({ goal, days }) {
 
       <div className="notes-filters">
         <button
+          type="button"
           className={`filter-btn${filter === 'all' ? ' active' : ''}`}
           onClick={() => { setFilter('all'); setPage(1); }}
         >
           All
         </button>
         <button
+          type="button"
           className={`filter-btn${filter === 'notes' ? ' active' : ''}`}
           onClick={() => { setFilter('notes'); setPage(1); }}
         >
           With notes
         </button>
         <button
+          type="button"
           className={`filter-btn${filter === 'red-yellow' ? ' active' : ''}`}
           onClick={() => { setFilter('red-yellow'); setPage(1); }}
         >
           Red/Yellow
         </button>
         <button
+          type="button"
           className={`filter-btn${filter === 'todos' ? ' active' : ''}`}
           onClick={() => { setFilter('todos'); setPage(1); }}
         >
@@ -93,14 +98,14 @@ export default function NotesTable({ goal, days }) {
                         <span className="nt-status-label">{color.label}</span>
                       </>
                     ) : (
-                      <span className="nt-no-note">—</span>
+                      <span className="nt-no-note">-</span>
                     )}
                   </td>
                   <td className="col-note">
                     {data.note ? (
                       <span className="nt-note">{data.note}</span>
                     ) : (
-                      <span className="nt-no-note">—</span>
+                      <span className="nt-no-note">-</span>
                     )}
                   </td>
                 </tr>
@@ -113,9 +118,11 @@ export default function NotesTable({ goal, days }) {
       {totalPages > 1 && (
         <div className="notes-pagination">
           <button
+            type="button"
             className="pg-btn"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={safePage === 1}
+            aria-label="Previous notes page"
           >
             ←
           </button>
@@ -123,9 +130,11 @@ export default function NotesTable({ goal, days }) {
           <div className="pg-pages">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
               <button
+                type="button"
                 key={n}
                 className={`pg-num${n === safePage ? ' active' : ''}`}
                 onClick={() => setPage(n)}
+                aria-label={`Go to notes page ${n}`}
               >
                 {n}
               </button>
@@ -133,9 +142,11 @@ export default function NotesTable({ goal, days }) {
           </div>
 
           <button
+            type="button"
             className="pg-btn"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={safePage === totalPages}
+            aria-label="Next notes page"
           >
             →
           </button>

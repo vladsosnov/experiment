@@ -1,7 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { STATUS_COLORS } from './statusColors';
 import { isWeekend } from '../utils/dates';
-import { groupTodosByCompletion, reorderTodos } from '../utils/todos';
+import {
+  addSubtaskToTodo,
+  deleteSubtaskFromTodo,
+  getSubtasks,
+  groupTodosByCompletion,
+  reorderTodos,
+  toggleSubtaskCompletion,
+  toggleTodoCompletion,
+  updateSubtaskText,
+} from '../utils/todos';
 
 const STATUSES = ['green', 'blue', 'yellow', 'red'];
 const KEY_MAP = { '1': 'green', '2': 'blue', '3': 'yellow', '4': 'red' };
@@ -11,8 +20,12 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
   const [note, setNote] = useState(data?.note ?? '');
   const [todos, setTodos] = useState(() => groupTodosByCompletion(data?.todos ?? []));
   const [newTodo, setNewTodo] = useState('');
+  const [newSubtasks, setNewSubtasks] = useState({});
+  const [addingSubtaskTodoId, setAddingSubtaskTodoId] = useState(null);
   const [editingTodoId, setEditingTodoId] = useState(null);
   const [editingTodoText, setEditingTodoText] = useState('');
+  const [editingSubtask, setEditingSubtask] = useState(null);
+  const [editingSubtaskText, setEditingSubtaskText] = useState('');
   const [draggedTodoId, setDraggedTodoId] = useState(null);
   const [workedWeekend, setWorkedWeekend] = useState(data?.workedWeekend ?? false);
   const noteRef = useRef(null);
@@ -64,9 +77,7 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
   }
 
   function handleToggleTodo(id) {
-    setTodos((currentTodos) => groupTodosByCompletion(
-      currentTodos.map(t => t.id === id ? { ...t, completed: !t.completed } : t),
-    ));
+    setTodos((currentTodos) => toggleTodoCompletion(currentTodos, id));
   }
 
   function handleDeleteTodo(id) {
@@ -81,6 +92,63 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
     if (draggedTodoId === null) return;
     setTodos((currentTodos) => reorderTodos(currentTodos, draggedTodoId, targetId));
     setDraggedTodoId(null);
+  }
+
+  function handleSubtaskInputChange(todoId, value) {
+    setNewSubtasks((current) => ({ ...current, [todoId]: value }));
+  }
+
+  function handleAddSubtask(todoId) {
+    const text = newSubtasks[todoId]?.trim();
+    if (!text) return;
+
+    setTodos((currentTodos) => addSubtaskToTodo(currentTodos, todoId, {
+      id: `${Date.now()}-${todoId}`,
+      text,
+      completed: false,
+    }));
+    setNewSubtasks((current) => {
+      const next = { ...current };
+      delete next[todoId];
+      return next;
+    });
+    setAddingSubtaskTodoId(null);
+  }
+
+  function handleCancelAddSubtask(todoId) {
+    setNewSubtasks((current) => {
+      const next = { ...current };
+      delete next[todoId];
+      return next;
+    });
+    setAddingSubtaskTodoId(null);
+  }
+
+  function handleToggleSubtask(todoId, subtaskId) {
+    setTodos((currentTodos) => toggleSubtaskCompletion(currentTodos, todoId, subtaskId));
+  }
+
+  function handleStartEditSubtask(todoId, subtask) {
+    setEditingSubtask({ todoId, subtaskId: subtask.id });
+    setEditingSubtaskText(subtask.text);
+  }
+
+  function handleConfirmEditSubtask() {
+    if (!editingSubtask) return;
+    if (!editingSubtaskText.trim()) return;
+
+    setTodos((currentTodos) => updateSubtaskText(
+      currentTodos,
+      editingSubtask.todoId,
+      editingSubtask.subtaskId,
+      editingSubtaskText,
+    ));
+    setEditingSubtask(null);
+    setEditingSubtaskText('');
+  }
+
+  function handleDeleteSubtask(todoId, subtaskId) {
+    setTodos((currentTodos) => deleteSubtaskFromTodo(currentTodos, todoId, subtaskId));
   }
 
   function handleClear() {
@@ -108,7 +176,7 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
             <h2>Day {dayNumber}</h2>
             <span className="modal-date">{dateStr}</span>
           </div>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button type="button" className="modal-close" onClick={onClose}>✕</button>
         </div>
 
         <p className="modal-hint">Click a color or press <kbd>1</kbd>–<kbd>4</kbd></p>
@@ -130,6 +198,7 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
         <div className="status-grid">
           {STATUSES.map((s, i) => (
             <button
+              type="button"
               key={s}
               className={`status-btn${status === s ? ' selected' : ''}`}
               style={{ '--color': STATUS_COLORS[s].bg }}
@@ -165,8 +234,15 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
               onChange={(e) => setNewTodo(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddTodo()}
               placeholder="Add a todo item..."
+              aria-label="Add todo item"
             />
-            <button className="btn-add-todo" onClick={handleAddTodo} disabled={!newTodo.trim()}>
+            <button
+              type="button"
+              className="btn-add-todo"
+              onClick={handleAddTodo}
+              disabled={!newTodo.trim()}
+              aria-label="Add todo"
+            >
               +
             </button>
           </div>
@@ -179,42 +255,151 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={() => handleDropTodo(todo.id)}
                 >
-                  <button
-                    type="button"
-                    className="todo-drag-handle"
-                    draggable
-                    aria-label={`Drag todo ${todo.text}`}
-                    onDragStart={() => handleDragStartTodo(todo.id)}
-                    onDragEnd={() => setDraggedTodoId(null)}
-                  >
-                    ⋮⋮
-                  </button>
-                  <input
-                    type="checkbox"
-                    className="todo-checkbox"
-                    checked={todo.completed}
-                    onChange={() => handleToggleTodo(todo.id)}
-                  />
-                  {editingTodoId === todo.id ? (
+                  <div className="todo-main-row">
+                    <button
+                      type="button"
+                      className="todo-drag-handle"
+                      draggable
+                      aria-label={`Drag todo ${todo.text}`}
+                      onDragStart={() => handleDragStartTodo(todo.id)}
+                      onDragEnd={() => setDraggedTodoId(null)}
+                    >
+                      ⋮⋮
+                    </button>
                     <input
-                      className="todo-input todo-edit-input"
-                      value={editingTodoText}
-                      onChange={(e) => setEditingTodoText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleConfirmEditTodo(todo.id);
-                        if (e.key === 'Escape') setEditingTodoId(null);
-                      }}
-                      onBlur={() => handleConfirmEditTodo(todo.id)}
-                      autoFocus
+                      type="checkbox"
+                      className="todo-checkbox"
+                      checked={todo.completed}
+                      onChange={() => handleToggleTodo(todo.id)}
+                      aria-label={`Toggle todo ${todo.text}`}
                     />
-                  ) : (
-                    <span className="todo-text" onDoubleClick={() => handleStartEditTodo(todo)}>
-                      {todo.text}
-                    </span>
-                  )}
-                  <button className="btn-delete-todo" onClick={() => handleDeleteTodo(todo.id)}>
-                    ✕
-                  </button>
+                    {editingTodoId === todo.id ? (
+                      <input
+                        className="todo-input todo-edit-input"
+                        value={editingTodoText}
+                        onChange={(e) => setEditingTodoText(e.target.value)}
+                        aria-label={`Edit todo ${todo.text}`}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleConfirmEditTodo(todo.id);
+                          if (e.key === 'Escape') setEditingTodoId(null);
+                        }}
+                        onBlur={() => handleConfirmEditTodo(todo.id)}
+                      />
+                    ) : (
+                      <span className="todo-text" onDoubleClick={() => handleStartEditTodo(todo)}>
+                        {todo.text}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className="btn-show-subtask-input"
+                      onClick={() => setAddingSubtaskTodoId(todo.id)}
+                      aria-label={`Add subtask to ${todo.text}`}
+                    >
+                      +
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-delete-todo"
+                      onClick={() => handleDeleteTodo(todo.id)}
+                      aria-label={`Delete todo ${todo.text}`}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="subtask-section">
+                    {getSubtasks(todo).length > 0 && (
+                      <ul className="subtask-list">
+                        {getSubtasks(todo).map((subtask) => {
+                          const isEditing = editingSubtask?.todoId === todo.id
+                            && editingSubtask?.subtaskId === subtask.id;
+
+                          return (
+                            <li
+                              key={subtask.id}
+                              className={`subtask-item${subtask.completed ? ' completed' : ''}`}
+                            >
+                              <input
+                                type="checkbox"
+                                className="subtask-checkbox"
+                                checked={subtask.completed}
+                                onChange={() => handleToggleSubtask(todo.id, subtask.id)}
+                                aria-label={`Toggle subtask ${subtask.text}`}
+                              />
+                              {isEditing ? (
+                                <input
+                                  className="todo-input subtask-edit-input"
+                                  value={editingSubtaskText}
+                                  onChange={(e) => setEditingSubtaskText(e.target.value)}
+                                  aria-label={`Edit subtask ${subtask.text}`}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleConfirmEditSubtask();
+                                    if (e.key === 'Escape') {
+                                      setEditingSubtask(null);
+                                      setEditingSubtaskText('');
+                                    }
+                                  }}
+                                  onBlur={handleConfirmEditSubtask}
+                                />
+                              ) : (
+                                <span
+                                  className="subtask-text"
+                                  onDoubleClick={() => handleStartEditSubtask(todo.id, subtask)}
+                                >
+                                  {subtask.text}
+                                </span>
+                              )}
+                              <button
+                                type="button"
+                                className="btn-delete-subtask"
+                                onClick={() => handleDeleteSubtask(todo.id, subtask.id)}
+                                aria-label={`Delete subtask ${subtask.text}`}
+                                title="Delete subtask"
+                              >
+                                ✕
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+
+                    {addingSubtaskTodoId === todo.id && (
+                      <div className="subtask-input-row">
+                        <input
+                          type="text"
+                          className="todo-input subtask-input"
+                          value={newSubtasks[todo.id] ?? ''}
+                          onChange={(e) => handleSubtaskInputChange(todo.id, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleAddSubtask(todo.id);
+                            if (e.key === 'Escape') handleCancelAddSubtask(todo.id);
+                          }}
+                          placeholder="Add a subtask..."
+                          aria-label={`Add subtask to ${todo.text}`}
+                        />
+                        <button
+                          type="button"
+                          className="btn-add-subtask"
+                          onClick={() => handleAddSubtask(todo.id)}
+                          disabled={!newSubtasks[todo.id]?.trim()}
+                          aria-label={`Add subtask to ${todo.text}`}
+                        >
+                          +
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-cancel-subtask"
+                          onClick={() => handleCancelAddSubtask(todo.id)}
+                          aria-label={`Cancel adding subtask to ${todo.text}`}
+                          title="Cancel subtask"
+                        >
+                          -
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -223,11 +408,12 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
 
         <div className="modal-actions">
           {data && (
-            <button className="btn-ghost" onClick={handleClear}>
+            <button type="button" className="btn-ghost" onClick={handleClear}>
               Clear day
             </button>
           )}
           <button
+            type="button"
             className="btn-primary"
             onClick={handleSave}
             disabled={status && !note.trim()}

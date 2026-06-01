@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { dateRange } from '../utils/dates';
+import { getSubtasks } from '../utils/todos';
 
 export default function AllTodos({ goal, days }) {
   const [filter, setFilter] = useState('pending'); // 'all' | 'pending' | 'completed'
@@ -41,18 +42,21 @@ export default function AllTodos({ goal, days }) {
         <span className="all-todos-title">All TODOs</span>
         <div className="all-todos-filters">
           <button
+            type="button"
             className={`all-todos-filter${filter === 'all' ? ' active' : ''}`}
             onClick={() => setFilter('all')}
           >
             All ({todos.length})
           </button>
           <button
+            type="button"
             className={`all-todos-filter${filter === 'pending' ? ' active' : ''}`}
             onClick={() => setFilter('pending')}
           >
             Pending ({pendingCount})
           </button>
           <button
+            type="button"
             className={`all-todos-filter${filter === 'completed' ? ' active' : ''}`}
             onClick={() => setFilter('completed')}
           >
@@ -70,7 +74,17 @@ export default function AllTodos({ goal, days }) {
               <span className={`all-todos-status ${todo.completed ? 'done' : 'pending'}`}>
                 {todo.completed ? '✓' : '○'}
               </span>
-              <span className="all-todos-text">{todo.text}</span>
+              <span className="all-todos-text">
+                {todo.text}
+                {getSubtasks(todo).length > 0 && (
+                  <span className="all-todos-subtasks">
+                    {getSubtasks(todo).filter((subtask) => subtask.completed).length}
+                    /
+                    {getSubtasks(todo).length}
+                    {' '}subtasks
+                  </span>
+                )}
+              </span>
               <span className="all-todos-meta">
                 Day {todo.dayNumber} · {todo.dateStr}
               </span>

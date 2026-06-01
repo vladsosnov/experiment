@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { dateRange } from '../utils/dates';
+import { countCompletedTodoItems, countIncompleteTodos, countTodoItems } from '../utils/todos';
 
 export default function TodoInsights({ goal, days }) {
   const insights = useMemo(() => {
@@ -12,19 +13,20 @@ export default function TodoInsights({ goal, days }) {
     allDates.forEach((dateStr, idx) => {
       const data = days[dateStr];
       if (data?.todos && data.todos.length > 0) {
-        const dayIncomplete = data.todos.filter(t => !t.completed).length;
-        const dayComplete = data.todos.filter(t => t.completed).length;
+        const dayIncomplete = countIncompleteTodos(data.todos);
+        const dayComplete = countCompletedTodoItems(data.todos);
+        const dayTotal = countTodoItems(data.todos);
 
         if (dayIncomplete > 0) {
           daysWithTodos.push({
             dateStr,
             dayNumber: idx + 1,
             incomplete: dayIncomplete,
-            total: data.todos.length,
+            total: dayTotal,
           });
         }
 
-        totalTodos += data.todos.length;
+        totalTodos += dayTotal;
         completedTodos += dayComplete;
         incompleteTodos += dayIncomplete;
       }
