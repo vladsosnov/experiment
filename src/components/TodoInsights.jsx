@@ -5,26 +5,16 @@ import { countCompletedTodoItems, countIncompleteTodos, countTodoItems } from '.
 export default function TodoInsights({ goal, days }) {
   const insights = useMemo(() => {
     const allDates = dateRange(goal.startDate, goal.endDate);
-    const daysWithTodos = [];
     let totalTodos = 0;
     let completedTodos = 0;
     let incompleteTodos = 0;
 
-    allDates.forEach((dateStr, idx) => {
+    allDates.forEach((dateStr) => {
       const data = days[dateStr];
       if (data?.todos && data.todos.length > 0) {
         const dayIncomplete = countIncompleteTodos(data.todos);
         const dayComplete = countCompletedTodoItems(data.todos);
         const dayTotal = countTodoItems(data.todos);
-
-        if (dayIncomplete > 0) {
-          daysWithTodos.push({
-            dateStr,
-            dayNumber: idx + 1,
-            incomplete: dayIncomplete,
-            total: dayTotal,
-          });
-        }
 
         totalTodos += dayTotal;
         completedTodos += dayComplete;
@@ -33,7 +23,6 @@ export default function TodoInsights({ goal, days }) {
     });
 
     return {
-      daysWithTodos,
       totalTodos,
       completedTodos,
       incompleteTodos,
@@ -65,23 +54,6 @@ export default function TodoInsights({ goal, days }) {
           <span className="todo-stat-label">Done</span>
         </div>
       </div>
-
-      {insights.daysWithTodos.length > 0 && (
-        <div className="todo-upcoming">
-          <h4 className="todo-upcoming-title">Days with pending todos</h4>
-          <div className="todo-upcoming-list">
-            {insights.daysWithTodos.map(({ dateStr, dayNumber, incomplete, total }) => (
-              <div key={dateStr} className="todo-upcoming-item">
-                <span className="todo-upcoming-day">Day {dayNumber}</span>
-                <span className="todo-upcoming-date">{dateStr}</span>
-                <span className="todo-upcoming-count">
-                  {incomplete} / {total} pending
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,22 +1,26 @@
 import { useMemo, useState } from 'react';
-import { dateRange } from '../utils/dates';
+import { dateRange, todayString } from '../utils/dates';
 import { STATUS_COLORS } from './statusColors';
 import { countIncompleteTodos } from '../utils/todos';
+import { isDateInWeek } from '../utils/weeks';
 
 const PAGE_SIZE = 7;
 
 export default function NotesTable({ goal, days }) {
   const [page, setPage] = useState(1);
-  const [filter, setFilter] = useState('all'); // all, notes, red-yellow, todos
+  const [filter, setFilter] = useState('current-week'); // current-week, all, notes, red-yellow, todos
 
   const rows = useMemo(() => {
     const allDates = dateRange(goal.startDate, goal.endDate);
+    const today = todayString();
     let filtered = allDates
       .map((dateStr, idx) => ({ dateStr, dayNumber: idx + 1, data: days[dateStr] ?? null }))
       .filter((r) => r.data !== null);
 
     // Apply filters
-    if (filter === 'notes') {
+    if (filter === 'current-week') {
+      filtered = filtered.filter(r => isDateInWeek(r.dateStr, today));
+    } else if (filter === 'notes') {
       filtered = filtered.filter(r => r.data.note && r.data.note.trim());
     } else if (filter === 'red-yellow') {
       filtered = filtered.filter(r => r.data.status === 'red' || r.data.status === 'yellow');
@@ -40,6 +44,13 @@ export default function NotesTable({ goal, days }) {
       </div>
 
       <div className="notes-filters">
+        <button
+          type="button"
+          className={`filter-btn${filter === 'current-week' ? ' active' : ''}`}
+          onClick={() => { setFilter('current-week'); setPage(1); }}
+        >
+          Current week
+        </button>
         <button
           type="button"
           className={`filter-btn${filter === 'all' ? ' active' : ''}`}

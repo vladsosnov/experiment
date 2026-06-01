@@ -151,11 +151,6 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
     setTodos((currentTodos) => deleteSubtaskFromTodo(currentTodos, todoId, subtaskId));
   }
 
-  function handleClear() {
-    onSave(dateStr, null);
-    onClose();
-  }
-
   return (
     <div
       className="modal-overlay"
@@ -407,11 +402,6 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
         </div>
 
         <div className="modal-actions">
-          {data && (
-            <button type="button" className="btn-ghost" onClick={handleClear}>
-              Clear day
-            </button>
-          )}
           <button
             type="button"
             className="btn-primary"

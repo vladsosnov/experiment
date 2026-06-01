@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import GoalSetup from './components/GoalSetup';
 import CalendarGrid from './components/CalendarGrid';
 import ProgressBar from './components/ProgressBar';
-import Summary from './components/Summary';
 import DayModal from './components/DayModal';
 import Congrats from './components/Congrats';
 import { hasCompletedGoal } from './utils/congrats';
@@ -11,10 +10,9 @@ import GoalEditModal from './components/GoalEditModal';
 import NotesTable from './components/NotesTable';
 import TodoInsights from './components/TodoInsights';
 import AllTodos from './components/AllTodos';
-import WeeklyReview from './components/WeeklyReview';
 import PasswordModal from './components/PasswordModal';
 import { loadGoal, saveGoal, loadDays, saveDays, clearAll } from './utils/storage';
-import { dateRange, todayString } from './utils/dates';
+import { dateRange } from './utils/dates';
 import { getQuote } from './utils/quotes';
 import { exportData, importData } from './utils/backup';
 import { applySeededPlanningTodo, normalizeSavedDay } from './utils/seededTodos';
@@ -30,10 +28,10 @@ export default function App() {
   const [modalDate, setModalDate] = useState(null);
   const [toast, setToast] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [goalMenuOpen, setGoalMenuOpen] = useState(false);
   const [importError, setImportError] = useState('');
   const importRef = useRef(null);
-
-  const today = todayString();
+  const goalMenuRef = useRef(null);
 
   useEffect(() => {
     if (!unlocked) return;
@@ -50,6 +48,27 @@ export default function App() {
       setLoading(false);
     });
   }, [unlocked]);
+
+  useEffect(() => {
+    if (!goalMenuOpen) return undefined;
+
+    function handlePointerDown(e) {
+      if (!goalMenuRef.current?.contains(e.target)) {
+        setGoalMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') setGoalMenuOpen(false);
+    }
+
+    document.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [goalMenuOpen]);
 
   function handleUnlock() {
     sessionStorage.setItem(SESSION_KEY, '1');
@@ -94,11 +113,13 @@ export default function App() {
   }
 
   async function handleExport() {
+    setGoalMenuOpen(false);
     await exportData();
   }
 
   function handleImportClick() {
     setImportError('');
+    setGoalMenuOpen(false);
     importRef.current?.click();
   }
 
@@ -118,6 +139,7 @@ export default function App() {
   }
 
   async function handleReset() {
+    setGoalMenuOpen(false);
     if (!confirm('Reset all data? This cannot be undone.')) return;
     await clearAll();
     setGoal(null);
@@ -129,7 +151,7 @@ export default function App() {
   }
 
   if (loading) {
-    return <div className="app-loading">Loading...</div>;
+    return <div className="app-loading">Loading…</div>;
   }
 
   const modalDayNumber = modalDate && goal
@@ -147,24 +169,45 @@ export default function App() {
           <h1>🎯 {goal.title}</h1>
           <span className="app-dates">{goal.startDate} → {goal.endDate}</span>
         </div>
-        <div className="header-actions">
+        <div className="header-actions" ref={goalMenuRef}>
           <button
-            className="btn-today"
-            onClick={() => setModalDate(today)}
-            disabled={today < goal.startDate || today > goal.endDate}
+            type="button"
+            className="btn-goal-menu"
+            onClick={() => setGoalMenuOpen((open) => !open)}
+            aria-label="Open goal actions"
+            aria-expanded={goalMenuOpen}
           >
-            Log today
+            ☰
           </button>
-          <div className="header-tools">
-            <button className="btn-ghost small" onClick={() => setEditOpen(true)}>Edit goal</button>
-            <button className="btn-ghost small" onClick={handleExport}>Export</button>
-            <button className="btn-ghost small" onClick={handleImportClick}>Import</button>
-            <button className="btn-ghost small danger" onClick={handleReset}>Reset</button>
-          </div>
+          {goalMenuOpen && (
+            <div className="goal-menu">
+              <span className="goal-menu-title">Goal actions</span>
+              <button
+                type="button"
+                className="goal-menu-item"
+                onClick={() => {
+                  setEditOpen(true);
+                  setGoalMenuOpen(false);
+                }}
+              >
+                Edit
+              </button>
+              <button type="button" className="goal-menu-item" onClick={handleExport}>
+                Export
+              </button>
+              <button type="button" className="goal-menu-item" onClick={handleImportClick}>
+                Import
+              </button>
+              <button type="button" className="goal-menu-item danger" onClick={handleReset}>
+                Reset
+              </button>
+            </div>
+          )}
           <input
             ref={importRef}
             type="file"
             accept=".json"
+            aria-label="Import goal backup"
             style={{ display: 'none' }}
             onChange={handleImportFile}
           />
@@ -174,7 +217,14 @@ export default function App() {
       {importError && (
         <div className="import-error">
           {importError}
-          <button className="import-error-close" onClick={() => setImportError('')}>✕</button>
+          <button
+            type="button"
+            className="import-error-close"
+            onClick={() => setImportError('')}
+            aria-label="Dismiss import error"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -184,9 +234,7 @@ export default function App() {
         <CalendarGrid goal={goal} days={days} onDayClick={handleDayClick} />
         <TodoInsights goal={goal} days={days} />
         <AllTodos goal={goal} days={days} />
-        <WeeklyReview goal={goal} days={days} />
         <NotesTable goal={goal} days={days} />
-        <Summary goal={goal} days={days} />
       </main>
 
       {toast && (
