@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  LEETCODE_TODO_TEXT,
   normalizeSavedDay,
   PLAN_NEXT_DAY_TODO_TEXT,
   applySeededPlanningTodo,
@@ -8,6 +9,10 @@ import {
 import { getCongratsStats, hasCompletedGoal } from './congrats';
 
 describe('applySeededPlanningTodo', () => {
+  it('defines the LeetCode todo text requested for the June 4 seed', () => {
+    expect(LEETCODE_TODO_TEXT).toBe('Solve 1 LeetCode problem');
+  });
+
   it('adds the seeded todo to every qualifying day in the goal range', () => {
     const goal = {
       startDate: '2026-04-06',
@@ -50,6 +55,58 @@ describe('applySeededPlanningTodo', () => {
 
     expect(seededTodos).toHaveLength(1);
     expect(seededTodos[0].completed).toBe(true);
+  });
+
+  it('adds the LeetCode todo to every goal day from June 4 2026 onward', () => {
+    const goal = {
+      startDate: '2026-06-03',
+      endDate: '2026-06-06',
+    };
+
+    const next = applySeededPlanningTodo(goal, {});
+
+    expect(next['2026-06-03']?.todos?.some((todo) => todo.text === LEETCODE_TODO_TEXT)).toBe(false);
+    expect(next['2026-06-04'].todos.some((todo) => todo.text === LEETCODE_TODO_TEXT)).toBe(true);
+    expect(next['2026-06-05'].todos.some((todo) => todo.text === LEETCODE_TODO_TEXT)).toBe(true);
+    expect(next['2026-06-06'].todos.some((todo) => todo.text === LEETCODE_TODO_TEXT)).toBe(true);
+  });
+
+  it('does not duplicate the LeetCode todo when it already exists', () => {
+    const goal = {
+      startDate: '2026-06-04',
+      endDate: '2026-06-04',
+    };
+    const days = {
+      '2026-06-04': {
+        todos: [
+          { id: 1, text: LEETCODE_TODO_TEXT, completed: true },
+          { id: 2, text: 'Existing', completed: false },
+        ],
+      },
+    };
+
+    const next = applySeededPlanningTodo(goal, days);
+    const seededTodos = next['2026-06-04'].todos.filter((todo) => todo.text === LEETCODE_TODO_TEXT);
+
+    expect(seededTodos).toHaveLength(1);
+    expect(seededTodos[0].completed).toBe(true);
+  });
+
+  it('does not re-add the LeetCode todo after the user dismisses it for a day', () => {
+    const goal = {
+      startDate: '2026-06-04',
+      endDate: '2026-06-04',
+    };
+
+    const next = applySeededPlanningTodo(goal, {
+      '2026-06-04': {
+        dismissSeededPlanningTodo: true,
+        dismissSeededLeetcodeTodo: true,
+        todos: [],
+      },
+    });
+
+    expect(next['2026-06-04'].todos).toEqual([]);
   });
 
   it('treats the goal as incomplete until the last day has a status', () => {
@@ -123,6 +180,19 @@ describe('applySeededPlanningTodo', () => {
       workedWeekend: false,
     })).toEqual({
       dismissSeededPlanningTodo: true,
+      todos: [],
+    });
+  });
+
+  it('keeps a dismissal record when the user removes the LeetCode todo from an otherwise empty day', () => {
+    expect(normalizeSavedDay('2026-06-04', {
+      status: null,
+      note: '',
+      todos: [],
+      workedWeekend: false,
+    })).toEqual({
+      dismissSeededPlanningTodo: true,
+      dismissSeededLeetcodeTodo: true,
       todos: [],
     });
   });
