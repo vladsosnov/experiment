@@ -1,12 +1,20 @@
-import { loadGoal, loadDays, saveGoal, saveDays } from './storage';
+import {
+  loadGoal,
+  loadDays,
+  loadReflections,
+  saveGoal,
+  saveDays,
+  saveReflections,
+} from './storage';
 
 export async function exportData() {
-  const [goal, days] = await Promise.all([loadGoal(), loadDays()]);
+  const [goal, days, reflections] = await Promise.all([loadGoal(), loadDays(), loadReflections()]);
   const payload = {
     version: 1,
     exportedAt: new Date().toISOString(),
     goal,
     days,
+    reflections,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -21,7 +29,7 @@ export async function exportData() {
 
 /**
  * Parse and validate an imported File object.
- * Returns a Promise that resolves to { goal, days } or rejects with an error message.
+ * Returns a Promise that resolves to { goal, days, reflections } or rejects with an error message.
  */
 export function importData(file) {
   return new Promise((resolve, reject) => {
@@ -41,9 +49,11 @@ export function importData(file) {
           reject('Invalid backup file: goal is missing date fields.');
           return;
         }
+        const reflections = Array.isArray(parsed.reflections) ? parsed.reflections : [];
         saveGoal(parsed.goal);
         saveDays(parsed.days);
-        resolve({ goal: parsed.goal, days: parsed.days });
+        saveReflections(reflections);
+        resolve({ goal: parsed.goal, days: parsed.days, reflections });
       } catch {
         reject('Could not parse the file. Make sure it is a valid backup.');
       }

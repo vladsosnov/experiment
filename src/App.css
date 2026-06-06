@@ -1777,6 +1777,131 @@
   white-space: nowrap;
 }
 
+/* ── Self Reflections ─────────────────────────────────────────── */
+.reflections-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+.reflections-header {
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid #334155;
+}
+
+.reflections-subtitle {
+  color: #64748b;
+  display: block;
+  font-size: 0.78rem;
+  margin-top: 4px;
+}
+
+.reflections-header-actions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.reflection-add-btn,
+.reflection-icon-btn {
+  align-items: center;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #cbd5e1;
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.reflection-add-btn {
+  font-size: 1.2rem;
+  height: 34px;
+  width: 38px;
+}
+
+.reflection-icon-btn {
+  font-size: 0.88rem;
+  height: 30px;
+  width: 32px;
+}
+
+.reflection-add-btn:hover,
+.reflection-icon-btn:hover {
+  background: #162032;
+  border-color: #6366f1;
+  color: #f8fafc;
+}
+
+.reflections-table {
+  table-layout: fixed;
+}
+
+.reflection-date-col {
+  width: 128px;
+  color: #64748b !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.reflection-actions-col {
+  text-align: right !important;
+  width: 56px;
+}
+
+.reflection-text {
+  color: #e2e8f0;
+  display: -webkit-box;
+  line-height: 1.5;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  white-space: normal;
+}
+
+.reflection-modal {
+  max-width: 560px;
+}
+
+.reflection-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.reflection-textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.reflection-error {
+  color: #FA5053;
+  font-size: 0.82rem;
+  margin: -4px 0 0;
+}
+
+.sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
 /* ── Quote Toast ─────────────────────────────────────────────── */
 .quote-toast {
   position: fixed;
@@ -1930,4 +2055,9 @@
   .calendar-grid { gap: 4px; }
   .calendar-section { padding: 16px 12px; }
   .weekday-headers { gap: 4px; }
+  .reflections-header { align-items: flex-start; flex-direction: column; }
+  .reflections-header-actions { justify-content: space-between; width: 100%; }
+  .reflection-date-col { width: 112px; }
+  .reflection-actions-col { width: 44px; }
+  .reflection-text { -webkit-line-clamp: 4; }
 }

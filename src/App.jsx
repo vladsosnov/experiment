@@ -8,10 +8,19 @@ import { hasCompletedGoal } from './utils/congrats';
 import QuoteToast from './components/QuoteToast';
 import GoalEditModal from './components/GoalEditModal';
 import NotesTable from './components/NotesTable';
+import SelfReflections from './components/SelfReflections';
 import TodoInsights from './components/TodoInsights';
 import AllTodos from './components/AllTodos';
 import PasswordModal from './components/PasswordModal';
-import { loadGoal, saveGoal, loadDays, saveDays, clearAll } from './utils/storage';
+import {
+  loadGoal,
+  saveGoal,
+  loadDays,
+  saveDays,
+  loadReflections,
+  saveReflections,
+  clearAll,
+} from './utils/storage';
 import { dateRange } from './utils/dates';
 import { getQuote } from './utils/quotes';
 import { exportData, importData } from './utils/backup';
@@ -24,6 +33,7 @@ export default function App() {
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
   const [goal, setGoal] = useState(null);
   const [days, setDays] = useState({});
+  const [reflections, setReflections] = useState([]);
   const [loading, setLoading] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
   const [modalDate, setModalDate] = useState(null);
   const [toast, setToast] = useState(null);
@@ -35,10 +45,11 @@ export default function App() {
 
   useEffect(() => {
     if (!unlocked) return;
-    Promise.all([loadGoal(), loadDays()]).then(([g, d]) => {
+    Promise.all([loadGoal(), loadDays(), loadReflections()]).then(([g, d, r]) => {
       const normalizedDays = applySeededPlanningTodo(g, d);
       setGoal(g);
       setDays(normalizedDays);
+      setReflections(r);
       if (g && normalizedDays !== d) {
         saveDays(normalizedDays);
       }
@@ -78,10 +89,14 @@ export default function App() {
 
   async function handleGoalSave(newGoal) {
     const seededDays = applySeededPlanningTodo(newGoal, {});
-    await saveGoal(newGoal);
-    await saveDays(seededDays);
+    await Promise.all([
+      saveGoal(newGoal),
+      saveDays(seededDays),
+      saveReflections([]),
+    ]);
     setGoal(newGoal);
     setDays(seededDays);
+    setReflections([]);
   }
 
   const handleDayClick = useCallback((dateStr) => {
@@ -112,6 +127,11 @@ export default function App() {
     setDays(normalizedDays);
   }
 
+  async function handleReflectionsChange(nextReflections) {
+    await saveReflections(nextReflections);
+    setReflections(nextReflections);
+  }
+
   async function handleExport() {
     setGoalMenuOpen(false);
     await exportData();
@@ -127,12 +147,16 @@ export default function App() {
     const file = e.target.files?.[0];
     if (!file) return;
     importData(file)
-      .then(({ goal: g, days: d }) => {
+      .then(async ({ goal: g, days: d, reflections: r }) => {
         const normalizedDays = applySeededPlanningTodo(g, d);
-        saveGoal(g);
-        saveDays(normalizedDays);
+        await Promise.all([
+          saveGoal(g),
+          saveDays(normalizedDays),
+          saveReflections(r),
+        ]);
         setGoal(g);
         setDays(normalizedDays);
+        setReflections(r);
       })
       .catch((msg) => setImportError(msg));
     e.target.value = '';
@@ -144,6 +168,7 @@ export default function App() {
     await clearAll();
     setGoal(null);
     setDays({});
+    setReflections([]);
   }
 
   if (!unlocked) {
@@ -235,6 +260,7 @@ export default function App() {
         <TodoInsights goal={goal} days={days} />
         <AllTodos goal={goal} days={days} />
         <NotesTable goal={goal} days={days} />
+        <SelfReflections reflections={reflections} onChange={handleReflectionsChange} />
       </main>
 
       {toast && (
