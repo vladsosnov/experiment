@@ -1,9 +1,13 @@
-import { dateRange } from './dates';
+import { dateRange, fromDateString } from './dates';
 
 export const PLAN_NEXT_DAY_TODO_TEXT = 'Plan your next day';
 export const PLAN_NEXT_DAY_START_DATE = '2026-04-16';
 export const LEETCODE_TODO_TEXT = 'Solve 1 LeetCode problem';
 export const LEETCODE_TODO_START_DATE = '2026-06-04';
+export const READING_TODO_TEXT = 'Reading 10 mins';
+export const READING_TODO_START_DATE = '2026-06-06';
+export const FINANCIAL_CHECKIN_TODO_TEXT = 'Financial checkin';
+export const FINANCIAL_CHECKIN_TODO_START_DATE = '2026-06-06';
 
 const SEEDED_TODOS = [
   {
@@ -18,6 +22,19 @@ const SEEDED_TODOS = [
     idPrefix: 'seed-leetcode',
     dismissKey: 'dismissSeededLeetcodeTodo',
   },
+  {
+    text: READING_TODO_TEXT,
+    startDate: READING_TODO_START_DATE,
+    idPrefix: 'seed-reading',
+    dismissKey: 'dismissSeededReadingTodo',
+  },
+  {
+    text: FINANCIAL_CHECKIN_TODO_TEXT,
+    startDate: FINANCIAL_CHECKIN_TODO_START_DATE,
+    idPrefix: 'seed-financial-checkin',
+    dismissKey: 'dismissSeededFinancialCheckinTodo',
+    dayOfWeek: 0,
+  },
 ];
 
 function createSeededTodo(seed, dateStr) {
@@ -29,7 +46,9 @@ function createSeededTodo(seed, dateStr) {
 }
 
 function isQualifyingSeededTodoDate(seed, dateStr) {
-  return dateStr >= seed.startDate;
+  if (dateStr < seed.startDate) return false;
+  if (typeof seed.dayOfWeek !== 'number') return true;
+  return fromDateString(dateStr).getDay() === seed.dayOfWeek;
 }
 
 function shouldDismissSeededTodo(seed, dateStr, day) {

@@ -1,7 +1,9 @@
+import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { todayString } from '../utils/dates';
 
 const PAGE_SIZE = 7;
+const EMPTY_REFLECTIONS = [];
 
 function createReflectionId() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -11,7 +13,7 @@ function createReflectionId() {
 }
 
 function sortReflections(reflections) {
-  return [...reflections].sort((a, b) => {
+  return reflections.toSorted((a, b) => {
     if (a.date !== b.date) return b.date.localeCompare(a.date);
     return (b.updatedAt ?? b.createdAt ?? '').localeCompare(a.updatedAt ?? a.createdAt ?? '');
   });
@@ -24,10 +26,10 @@ function getInitialForm(reflection) {
   };
 }
 
-export default function SelfReflections({ reflections = [], onChange }) {
+export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onChange }) {
   const [page, setPage] = useState(1);
   const [editingReflection, setEditingReflection] = useState(null);
-  const [form, setForm] = useState(getInitialForm(null));
+  const [form, setForm] = useState(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -222,7 +224,7 @@ export default function SelfReflections({ reflections = [], onChange }) {
       )}
 
       {formOpen && (
-        <div className="modal-overlay" onMouseDown={closeForm}>
+        <div className="modal-overlay" role="presentation" onMouseDown={closeForm}>
           <div className="modal reflection-modal" onMouseDown={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
@@ -259,7 +261,6 @@ export default function SelfReflections({ reflections = [], onChange }) {
                   disabled={saving}
                   onChange={(e) => setForm((current) => ({ ...current, text: e.target.value }))}
                   rows={6}
-                  autoFocus
                 />
               </label>
 
