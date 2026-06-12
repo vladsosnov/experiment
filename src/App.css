@@ -1855,7 +1855,7 @@
 
 .reflection-actions-col {
   text-align: right !important;
-  width: 56px;
+  width: 92px;
 }
 
 .reflection-text {
@@ -1866,6 +1866,28 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   white-space: normal;
+}
+
+.reflection-result-text {
+  color: #cbd5e1;
+  display: -webkit-box;
+  line-height: 1.5;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  white-space: normal;
+}
+
+.reflection-result-empty {
+  color: #64748b;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.reflection-row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
 }
 
 .reflection-modal {
@@ -2058,6 +2080,7 @@
   .reflections-header { align-items: flex-start; flex-direction: column; }
   .reflections-header-actions { justify-content: space-between; width: 100%; }
   .reflection-date-col { width: 112px; }
-  .reflection-actions-col { width: 44px; }
+  .reflection-actions-col { width: 76px; }
   .reflection-text { -webkit-line-clamp: 4; }
+  .reflection-result-text { -webkit-line-clamp: 4; }
 }

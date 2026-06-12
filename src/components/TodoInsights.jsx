@@ -37,7 +37,7 @@ export default function TodoInsights({ goal, days }) {
   return (
     <div className="todo-insights-section">
       <div className="todo-insights-header">
-        <span className="todo-insights-title">📋 Todo Insights</span>
+        <span className="todo-insights-title">Todo Insights</span>
       </div>
 
       <div className="todo-stats-grid">
