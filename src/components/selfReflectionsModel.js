@@ -1,8 +1,14 @@
-export function withReflectionResult(reflections, reflectionId, result, updatedAt = new Date().toISOString()) {
-  const cleanResult = result.trim();
+export function withReflectionEdits(reflections, reflectionId, form, updatedAt = new Date().toISOString()) {
+  const cleanResult = form.result.trim();
   return reflections.map((reflection) => (
     reflection.id === reflectionId
-      ? { ...reflection, result: cleanResult, updatedAt }
+      ? {
+        ...reflection,
+        date: form.date,
+        text: form.text.trim(),
+        result: cleanResult,
+        updatedAt,
+      }
       : reflection
   ));
 }

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useMemo, useState } from 'react';
 import { dateRange, todayString } from '../utils/dates';
 import { STATUS_COLORS } from './statusColors';
@@ -28,7 +29,7 @@ export default function NotesTable({ goal, days }) {
       filtered = filtered.filter(r => countIncompleteTodos(r.data.todos) > 0);
     }
 
-    return filtered.reverse();
+    return filter === 'current-week' ? filtered : filtered.reverse();
   }, [goal, days, filter]);
 
   // Reset to page 1 if rows shrink and current page is out of range

@@ -1855,7 +1855,7 @@
 
 .reflection-actions-col {
   text-align: right !important;
-  width: 92px;
+  width: 56px;
 }
 
 .reflection-text {
@@ -1882,12 +1882,6 @@
   color: #64748b;
   font-size: 0.82rem;
   white-space: nowrap;
-}
-
-.reflection-row-actions {
-  display: flex;
-  gap: 6px;
-  justify-content: flex-end;
 }
 
 .reflection-modal {
@@ -2080,7 +2074,7 @@
   .reflections-header { align-items: flex-start; flex-direction: column; }
   .reflections-header-actions { justify-content: space-between; width: 100%; }
   .reflection-date-col { width: 112px; }
-  .reflection-actions-col { width: 76px; }
+  .reflection-actions-col { width: 44px; }
   .reflection-text { -webkit-line-clamp: 4; }
   .reflection-result-text { -webkit-line-clamp: 4; }
 }

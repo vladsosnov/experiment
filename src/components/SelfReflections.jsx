@@ -1,7 +1,7 @@
 import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { todayString } from '../utils/dates';
-import { withReflectionResult } from './selfReflectionsModel';
+import { withReflectionEdits } from './selfReflectionsModel';
 
 const PAGE_SIZE = 7;
 const EMPTY_REFLECTIONS = [];
@@ -24,6 +24,7 @@ function getInitialForm(reflection) {
   return {
     date: reflection?.date ?? todayString(),
     text: reflection?.text ?? '',
+    result: reflection?.result ?? '',
   };
 }
 
@@ -33,10 +34,6 @@ export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onCha
   const [form, setForm] = useState(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [resultReflection, setResultReflection] = useState(null);
-  const [resultForm, setResultForm] = useState(null);
-  const [resultError, setResultError] = useState('');
-  const [resultSaving, setResultSaving] = useState(false);
 
   const sortedRows = useMemo(() => sortReflections(reflections), [reflections]);
   const totalPages = Math.max(1, Math.ceil(sortedRows.length / PAGE_SIZE));
@@ -44,11 +41,9 @@ export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onCha
   const pageRows = sortedRows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
   const isEditing = Boolean(editingReflection);
   const formOpen = form !== null;
-  const resultFormOpen = resultForm !== null;
-  const isEditingResult = Boolean(resultReflection?.result);
 
   useEffect(() => {
-    if (!formOpen && !resultFormOpen) return undefined;
+    if (!formOpen) return undefined;
 
     function handleKeyDown(e) {
       if (e.key !== 'Escape') return;
@@ -56,18 +51,13 @@ export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onCha
       setForm(null);
       setError('');
       setSaving(false);
-      setResultReflection(null);
-      setResultForm(null);
-      setResultError('');
-      setResultSaving(false);
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [formOpen, resultFormOpen]);
+  }, [formOpen]);
 
   function openNewForm() {
-    closeResultForm();
     setEditingReflection(null);
     setForm(getInitialForm(null));
     setError('');
@@ -75,7 +65,6 @@ export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onCha
   }
 
   function openEditForm(reflection) {
-    closeResultForm();
     setEditingReflection(reflection);
     setForm(getInitialForm(reflection));
     setError('');
@@ -89,24 +78,10 @@ export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onCha
     setSaving(false);
   }
 
-  function openResultForm(reflection) {
-    closeForm();
-    setResultReflection(reflection);
-    setResultForm({ result: reflection.result ?? '' });
-    setResultError('');
-    setResultSaving(false);
-  }
-
-  function closeResultForm() {
-    setResultReflection(null);
-    setResultForm(null);
-    setResultError('');
-    setResultSaving(false);
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
     const text = form.text.trim();
+    const result = form.result.trim();
     if (!form.date) {
       setError('Pick a date for this reflection.');
       return;
@@ -119,11 +94,7 @@ export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onCha
     const timestamp = new Date().toISOString();
     let next;
     if (isEditing) {
-      next = reflections.map((reflection) => (
-        reflection.id === editingReflection.id
-          ? { ...reflection, date: form.date, text, updatedAt: timestamp }
-          : reflection
-      ));
+      next = withReflectionEdits(reflections, editingReflection.id, { ...form, text, result }, timestamp);
     } else {
       next = [
         ...reflections,
@@ -131,6 +102,7 @@ export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onCha
           id: createReflectionId(),
           date: form.date,
           text,
+          ...(result ? { result } : {}),
           createdAt: timestamp,
           updatedAt: timestamp,
         },
@@ -146,28 +118,6 @@ export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onCha
     } catch {
       setError('Could not save this reflection. Try again.');
       setSaving(false);
-    }
-  }
-
-  async function handleSubmitResult(e) {
-    e.preventDefault();
-    const result = resultForm.result.trim();
-    if (!result) {
-      setResultError('Write the result before saving.');
-      return;
-    }
-
-    const timestamp = new Date().toISOString();
-    const next = withReflectionResult(reflections, resultReflection.id, result, timestamp);
-
-    setResultSaving(true);
-    setResultError('');
-    try {
-      await onChange(sortReflections(next));
-      closeResultForm();
-    } catch {
-      setResultError('Could not save this result. Try again.');
-      setResultSaving(false);
     }
   }
 
@@ -223,26 +173,15 @@ export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onCha
                   )}
                 </td>
                 <td className="reflection-actions-col">
-                  <div className="reflection-row-actions">
-                    <button
-                      type="button"
-                      className="reflection-icon-btn"
-                      onClick={() => openEditForm(reflection)}
-                      aria-label={`Edit reflection from ${reflection.date}`}
-                      title="Edit reflection"
-                    >
-                      ✎
-                    </button>
-                    <button
-                      type="button"
-                      className="reflection-icon-btn"
-                      onClick={() => openResultForm(reflection)}
-                      aria-label={`${reflection.result ? 'Edit' : 'Add'} result for reflection from ${reflection.date}`}
-                      title={reflection.result ? 'Edit result' : 'Add result'}
-                    >
-                      {reflection.result ? '✎' : '+'}
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="reflection-icon-btn"
+                    onClick={() => openEditForm(reflection)}
+                    aria-label={`Edit reflection from ${reflection.date}`}
+                    title="Edit reflection"
+                  >
+                    ✎
+                  </button>
                 </td>
               </tr>
             ))}
@@ -333,6 +272,17 @@ export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onCha
                 />
               </label>
 
+              <label className="edit-label">
+                Result
+                <textarea
+                  className="edit-input reflection-textarea"
+                  value={form.result}
+                  disabled={saving}
+                  onChange={(e) => setForm((current) => ({ ...current, result: e.target.value }))}
+                  rows={5}
+                />
+              </label>
+
               {error && <p className="reflection-error">{error}</p>}
 
               <div className="modal-actions">
@@ -341,51 +291,6 @@ export default function SelfReflections({ reflections = EMPTY_REFLECTIONS, onCha
                 </button>
                 <button type="submit" className="btn-primary" disabled={saving}>
                   {saving ? 'Saving…' : 'Save'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {resultFormOpen && (
-        <div className="modal-overlay" role="presentation" onMouseDown={closeResultForm}>
-          <div className="modal reflection-modal result-modal" onMouseDown={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div>
-                <h2>{isEditingResult ? 'Edit result' : 'Add result'}</h2>
-                <span className="modal-date">{resultReflection.date}</span>
-              </div>
-              <button
-                type="button"
-                className="modal-close"
-                onClick={closeResultForm}
-                aria-label="Close result form"
-              >
-                ×
-              </button>
-            </div>
-
-            <form className="reflection-form" onSubmit={handleSubmitResult}>
-              <label className="edit-label">
-                Result
-                <textarea
-                  className="edit-input reflection-textarea"
-                  value={resultForm.result}
-                  disabled={resultSaving}
-                  onChange={(e) => setResultForm((current) => ({ ...current, result: e.target.value }))}
-                  rows={5}
-                />
-              </label>
-
-              {resultError && <p className="reflection-error">{resultError}</p>}
-
-              <div className="modal-actions">
-                <button type="button" className="btn-ghost" onClick={closeResultForm} disabled={resultSaving}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn-primary" disabled={resultSaving}>
-                  {resultSaving ? 'Saving…' : 'Save'}
                 </button>
               </div>
             </form>
