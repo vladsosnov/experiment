@@ -3,17 +3,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const loadGoal = vi.fn();
 const loadDays = vi.fn();
 const loadReflections = vi.fn();
+const loadMentalChecks = vi.fn();
 const saveGoal = vi.fn();
 const saveDays = vi.fn();
 const saveReflections = vi.fn();
+const saveMentalChecks = vi.fn();
 
 vi.mock('./storage', () => ({
   loadGoal,
   loadDays,
   loadReflections,
+  loadMentalChecks,
   saveGoal,
   saveDays,
   saveReflections,
+  saveMentalChecks,
 }));
 
 describe('exportData', () => {
@@ -57,6 +61,9 @@ describe('exportData', () => {
     loadReflections.mockResolvedValue([
       { id: 'r1', date: '2026-04-15', text: 'Felt behind all day' },
     ]);
+    loadMentalChecks.mockResolvedValue([
+      { id: 'm1', mood: 'good', comment: 'Calm and focused', createdAt: '2026-04-15T09:00:00.000Z' },
+    ]);
 
     await exportData();
 
@@ -73,6 +80,9 @@ describe('exportData', () => {
     });
     expect(exported.reflections).toEqual([
       { id: 'r1', date: '2026-04-15', text: 'Felt behind all day' },
+    ]);
+    expect(exported.mentalChecks).toEqual([
+      { id: 'm1', mood: 'good', comment: 'Calm and focused', createdAt: '2026-04-15T09:00:00.000Z' },
     ]);
     expect(clickedLink.download).toMatch(/^marathon-prep-backup-\d{4}-\d{2}-\d{2}\.json$/);
     expect(clickedLink.click).toHaveBeenCalledTimes(1);
@@ -104,6 +114,9 @@ describe('importData', () => {
       reflections: [
         { id: 'r1', date: '2026-04-15', text: 'Felt behind all day' },
       ],
+      mentalChecks: [
+        { id: 'm1', mood: 'normal', comment: 'A little tired', createdAt: '2026-04-15T09:00:00.000Z' },
+      ],
     };
 
     globalThis.FileReader = class {
@@ -116,7 +129,26 @@ describe('importData', () => {
       goal: payload.goal,
       days: payload.days,
       reflections: payload.reflections,
+      mentalChecks: payload.mentalChecks,
     });
     expect(saveReflections).toHaveBeenCalledWith(payload.reflections);
+    expect(saveMentalChecks).toHaveBeenCalledWith(payload.mentalChecks);
+  });
+
+  it('keeps older backups compatible by defaulting mental checks to an empty array', async () => {
+    const file = { name: 'old-backup.json' };
+    const payload = {
+      goal: { title: 'Old goal', startDate: '2026-01-01', endDate: '2026-01-31' },
+      days: {},
+    };
+
+    globalThis.FileReader = class {
+      readAsText() {
+        this.onload({ target: { result: JSON.stringify(payload) } });
+      }
+    };
+
+    await expect(importData(file)).resolves.toMatchObject({ mentalChecks: [] });
+    expect(saveMentalChecks).toHaveBeenCalledWith([]);
   });
 });

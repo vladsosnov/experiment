@@ -1906,6 +1906,114 @@
   margin: -4px 0 0;
 }
 
+/* ── Mental Check ─────────────────────────────────────────────── */
+.mental-check-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mental-check-header {
+  align-items: center;
+  border-bottom: 1px solid #334155;
+  gap: 16px;
+}
+
+.mental-check-board {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+  padding: 24px;
+}
+
+.mental-check-square {
+  aspect-ratio: 1;
+  background: var(--mental-color);
+  border: 1px solid #f8fafc;
+  border-radius: 4px;
+  color: rgba(15, 23, 42, 0.78);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  margin: 0 auto;
+  max-width: 50px;
+  padding: 6px;
+  transition: filter 0.1s, transform 0.1s;
+  width: 100%;
+}
+
+.mental-check-square:hover,
+.mental-check-square:focus-visible {
+  filter: brightness(1.1);
+  transform: scale(1.08);
+}
+
+.mental-check-square:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+.mental-check-date {
+  color: rgba(248, 250, 252, 0.9);
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+
+.mental-check-empty {
+  color: #475569;
+  font-size: 0.85rem;
+  margin: 0;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.mental-check-modal {
+  max-width: 480px;
+}
+
+.mental-check-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.mental-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.mental-status-btn {
+  align-items: center;
+  background: #0f172a;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  color: #94a3b8;
+  display: flex;
+  font-size: 0.9rem;
+  font-weight: 600;
+  gap: 10px;
+  padding: 14px;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.mental-status-btn:hover:not(:disabled) {
+  background: #162032;
+  color: #f1f5f9;
+}
+
+.mental-status-btn.selected {
+  background: #162032;
+  border-color: var(--mental-color);
+  color: #f8fafc;
+}
+
+.mental-comment-label {
+  margin-bottom: 0;
+}
+
 .sr-only {
   border: 0;
   clip: rect(0 0 0 0);
@@ -2077,4 +2185,8 @@
   .reflection-actions-col { width: 44px; }
   .reflection-text { -webkit-line-clamp: 4; }
   .reflection-result-text { -webkit-line-clamp: 4; }
+  .mental-check-header { align-items: flex-start; flex-direction: column; }
+  .mental-check-board { gap: 5px; padding: 16px 12px; }
+  .mental-check-square { padding: 4px; }
+  .mental-check-date { font-size: 0.52rem; }
 }

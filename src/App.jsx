@@ -9,6 +9,7 @@ import QuoteToast from './components/QuoteToast';
 import GoalEditModal from './components/GoalEditModal';
 import NotesTable from './components/NotesTable';
 import SelfReflections from './components/SelfReflections';
+import MentalCheck from './components/MentalCheck';
 import TodoInsights from './components/TodoInsights';
 import AllTodos from './components/AllTodos';
 import PasswordModal from './components/PasswordModal';
@@ -19,6 +20,8 @@ import {
   saveDays,
   loadReflections,
   saveReflections,
+  loadMentalChecks,
+  saveMentalChecks,
   clearAll,
 } from './utils/storage';
 import { dateRange } from './utils/dates';
@@ -34,6 +37,7 @@ export default function App() {
   const [goal, setGoal] = useState(null);
   const [days, setDays] = useState({});
   const [reflections, setReflections] = useState([]);
+  const [mentalChecks, setMentalChecks] = useState([]);
   const [loading, setLoading] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
   const [modalDate, setModalDate] = useState(null);
   const [toast, setToast] = useState(null);
@@ -45,11 +49,12 @@ export default function App() {
 
   useEffect(() => {
     if (!unlocked) return;
-    Promise.all([loadGoal(), loadDays(), loadReflections()]).then(([g, d, r]) => {
+    Promise.all([loadGoal(), loadDays(), loadReflections(), loadMentalChecks()]).then(([g, d, r, m]) => {
       const normalizedDays = applySeededPlanningTodo(g, d);
       setGoal(g);
       setDays(normalizedDays);
       setReflections(r);
+      setMentalChecks(m);
       if (g && normalizedDays !== d) {
         saveDays(normalizedDays);
       }
@@ -93,10 +98,12 @@ export default function App() {
       saveGoal(newGoal),
       saveDays(seededDays),
       saveReflections([]),
+      saveMentalChecks([]),
     ]);
     setGoal(newGoal);
     setDays(seededDays);
     setReflections([]);
+    setMentalChecks([]);
   }
 
   const handleDayClick = useCallback((dateStr) => {
@@ -132,6 +139,11 @@ export default function App() {
     setReflections(nextReflections);
   }
 
+  async function handleMentalChecksChange(nextChecks) {
+    await saveMentalChecks(nextChecks);
+    setMentalChecks(nextChecks);
+  }
+
   async function handleExport() {
     setGoalMenuOpen(false);
     await exportData();
@@ -147,16 +159,18 @@ export default function App() {
     const file = e.target.files?.[0];
     if (!file) return;
     importData(file)
-      .then(async ({ goal: g, days: d, reflections: r }) => {
+      .then(async ({ goal: g, days: d, reflections: r, mentalChecks: m }) => {
         const normalizedDays = applySeededPlanningTodo(g, d);
         await Promise.all([
           saveGoal(g),
           saveDays(normalizedDays),
           saveReflections(r),
+          saveMentalChecks(m),
         ]);
         setGoal(g);
         setDays(normalizedDays);
         setReflections(r);
+        setMentalChecks(m);
       })
       .catch((msg) => setImportError(msg));
     e.target.value = '';
@@ -169,6 +183,7 @@ export default function App() {
     setGoal(null);
     setDays({});
     setReflections([]);
+    setMentalChecks([]);
   }
 
   if (!unlocked) {
@@ -261,6 +276,7 @@ export default function App() {
         <AllTodos goal={goal} days={days} />
         <NotesTable goal={goal} days={days} />
         <SelfReflections reflections={reflections} onChange={handleReflectionsChange} />
+        <MentalCheck checks={mentalChecks} onChange={handleMentalChecksChange} />
       </main>
 
       {toast && (

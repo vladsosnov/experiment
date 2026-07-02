@@ -16,15 +16,23 @@ vi.mock('firebase/firestore', () => ({
   deleteDoc,
 }));
 
-describe('reflection storage', () => {
+describe('reflection and mental check storage', () => {
   let loadReflections;
   let saveReflections;
   let clearAll;
+  let loadMentalChecks;
+  let saveMentalChecks;
 
   beforeEach(async () => {
     vi.resetModules();
     vi.clearAllMocks();
-    ({ loadReflections, saveReflections, clearAll } = await import('./storage'));
+    ({
+      loadReflections,
+      saveReflections,
+      loadMentalChecks,
+      saveMentalChecks,
+      clearAll,
+    } = await import('./storage'));
   });
 
   it('loads saved reflections as an array', async () => {
@@ -64,11 +72,28 @@ describe('reflection storage', () => {
     );
   });
 
+  it('loads and saves JSON-clean mental checks', async () => {
+    const checks = [
+      { id: 'm1', mood: 'great', comment: 'Clear headed', createdAt: '2026-06-06T08:00:00.000Z' },
+    ];
+    getDoc.mockResolvedValue({ exists: () => true, data: () => ({ value: checks }) });
+
+    await expect(loadMentalChecks()).resolves.toEqual(checks);
+    expect(getDoc).toHaveBeenCalledWith({ db: 'mock-db', collection: 'data', id: 'mentalChecks' });
+
+    await saveMentalChecks([{ ...checks[0], ignored: undefined }]);
+    expect(setDoc).toHaveBeenCalledWith(
+      { db: 'mock-db', collection: 'data', id: 'mentalChecks' },
+      { value: checks },
+    );
+  });
+
   it('clears reflections with the rest of the app data', async () => {
     await clearAll();
 
     expect(deleteDoc).toHaveBeenCalledWith({ db: 'mock-db', collection: 'data', id: 'goal' });
     expect(deleteDoc).toHaveBeenCalledWith({ db: 'mock-db', collection: 'data', id: 'days' });
     expect(deleteDoc).toHaveBeenCalledWith({ db: 'mock-db', collection: 'data', id: 'reflections' });
+    expect(deleteDoc).toHaveBeenCalledWith({ db: 'mock-db', collection: 'data', id: 'mentalChecks' });
   });
 });
