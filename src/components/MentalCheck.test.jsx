@@ -2,9 +2,42 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import MentalCheck from './MentalCheck';
-import { ensureDailyMentalChecks } from './mentalChecksModel';
+import { ensureDailyMentalChecks, mentalCheckStartDate } from './mentalChecksModel';
 
 describe('MentalCheck', () => {
+  it('uses a per-goal Mental Check start override and otherwise mirrors the goal timeline', () => {
+    expect(mentalCheckStartDate({
+      startDate: '2026-04-06',
+      mentalCheckStartDate: '2026-07-02',
+    })).toBe('2026-07-02');
+    expect(mentalCheckStartDate({ startDate: '2027-01-10' })).toBe('2027-01-10');
+  });
+
+  it('removes squares before the configured Mental Check start date', () => {
+    const next = ensureDailyMentalChecks(
+      [
+        {
+          id: 'april-6',
+          date: '2026-04-06',
+          mood: null,
+          comment: '',
+          createdAt: '2026-07-08T09:00:00.000Z',
+        },
+        {
+          id: 'july-2',
+          date: '2026-07-02',
+          mood: 'good',
+          comment: 'A good day.',
+          createdAt: '2026-07-02T09:00:00.000Z',
+        },
+      ],
+      '2026-07-02',
+      new Date(2026, 6, 2, 18, 0),
+    );
+
+    expect(next.map((check) => check.date)).toEqual(['2026-07-02']);
+  });
+
   it('adds one unfilled check for the current local day', () => {
     const next = ensureDailyMentalChecks(
       [],

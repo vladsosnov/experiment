@@ -19,14 +19,19 @@ export function mentalCheckDate(check) {
   return Number.isNaN(createdAt.getTime()) ? '' : localDateString(createdAt);
 }
 
+export function mentalCheckStartDate(goal) {
+  return goal?.mentalCheckStartDate || goal?.startDate;
+}
+
 export function ensureDailyMentalChecks(checks, startDate, now = new Date(), makeId = createCheckId) {
   const currentChecks = Array.isArray(checks) ? checks : [];
   const today = localDateString(now);
   const firstDate = startDate || today;
-  const existingDates = new Set(currentChecks.map(mentalCheckDate));
+  const timelineChecks = currentChecks.filter((check) => mentalCheckDate(check) >= firstDate);
+  const existingDates = new Set(timelineChecks.map(mentalCheckDate));
   const missingDates = dateRange(firstDate, today).filter((date) => !existingDates.has(date));
 
-  if (missingDates.length === 0) {
+  if (missingDates.length === 0 && timelineChecks.length === currentChecks.length) {
     return currentChecks;
   }
 
@@ -38,6 +43,6 @@ export function ensureDailyMentalChecks(checks, startDate, now = new Date(), mak
     createdAt: now.toISOString(),
   }));
 
-  return [...currentChecks, ...missingChecks]
+  return [...timelineChecks, ...missingChecks]
     .sort((left, right) => mentalCheckDate(left).localeCompare(mentalCheckDate(right)));
 }
