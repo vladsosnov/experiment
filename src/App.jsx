@@ -10,6 +10,7 @@ import GoalEditModal from './components/GoalEditModal';
 import NotesTable from './components/NotesTable';
 import SelfReflections from './components/SelfReflections';
 import MentalCheck from './components/MentalCheck';
+import { ensureDailyMentalCheck } from './components/mentalChecksModel';
 import TodoInsights from './components/TodoInsights';
 import AllTodos from './components/AllTodos';
 import PasswordModal from './components/PasswordModal';
@@ -51,12 +52,16 @@ export default function App() {
     if (!unlocked) return;
     Promise.all([loadGoal(), loadDays(), loadReflections(), loadMentalChecks()]).then(([g, d, r, m]) => {
       const normalizedDays = applySeededPlanningTodo(g, d);
+      const normalizedMentalChecks = g ? ensureDailyMentalCheck(m) : m;
       setGoal(g);
       setDays(normalizedDays);
       setReflections(r);
-      setMentalChecks(m);
+      setMentalChecks(normalizedMentalChecks);
       if (g && normalizedDays !== d) {
         saveDays(normalizedDays);
+      }
+      if (normalizedMentalChecks !== m) {
+        saveMentalChecks(normalizedMentalChecks);
       }
       setLoading(false);
     }).catch((err) => {
@@ -94,16 +99,17 @@ export default function App() {
 
   async function handleGoalSave(newGoal) {
     const seededDays = applySeededPlanningTodo(newGoal, {});
+    const dailyMentalChecks = ensureDailyMentalCheck([]);
     await Promise.all([
       saveGoal(newGoal),
       saveDays(seededDays),
       saveReflections([]),
-      saveMentalChecks([]),
+      saveMentalChecks(dailyMentalChecks),
     ]);
     setGoal(newGoal);
     setDays(seededDays);
     setReflections([]);
-    setMentalChecks([]);
+    setMentalChecks(dailyMentalChecks);
   }
 
   const handleDayClick = useCallback((dateStr) => {
@@ -161,16 +167,17 @@ export default function App() {
     importData(file)
       .then(async ({ goal: g, days: d, reflections: r, mentalChecks: m }) => {
         const normalizedDays = applySeededPlanningTodo(g, d);
+        const normalizedMentalChecks = ensureDailyMentalCheck(m);
         await Promise.all([
           saveGoal(g),
           saveDays(normalizedDays),
           saveReflections(r),
-          saveMentalChecks(m),
+          saveMentalChecks(normalizedMentalChecks),
         ]);
         setGoal(g);
         setDays(normalizedDays);
         setReflections(r);
-        setMentalChecks(m);
+        setMentalChecks(normalizedMentalChecks);
       })
       .catch((msg) => setImportError(msg));
     e.target.value = '';

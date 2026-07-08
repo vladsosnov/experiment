@@ -1954,6 +1954,20 @@
   outline-offset: 2px;
 }
 
+.mental-check-square.unfilled {
+  align-items: center;
+  border-color: #64748b;
+  border-style: dashed;
+  color: #94a3b8;
+  justify-content: space-between;
+}
+
+.mental-check-prompt {
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
 .mental-check-date {
   color: rgba(248, 250, 252, 0.9);
   font-size: 0.62rem;

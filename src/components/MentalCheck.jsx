@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { mentalCheckDate } from './mentalChecksModel';
 
 const MOODS = [
   { value: 'great', label: 'Great', color: '#50C878' },
@@ -10,13 +11,9 @@ const MOODS = [
 const MOOD_BY_VALUE = Object.fromEntries(MOODS.map((mood) => [mood.value, mood]));
 const EMPTY_CHECKS = [];
 
-function createCheckId() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
-function formatCheckDate(timestamp) {
-  const date = new Date(timestamp);
+function formatCheckDate(check) {
+  const dateKey = mentalCheckDate(check);
+  const date = new Date(`${dateKey}T00:00:00`);
   if (Number.isNaN(date.getTime())) return '';
   return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(date);
 }
@@ -47,18 +44,9 @@ export default function MentalCheck({ checks = EMPTY_CHECKS, onChange }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [formOpen]);
 
-  function openForm() {
-    setEditingCheck(null);
-    setMood(null);
-    setComment('');
-    setError('');
-    setSaving(false);
-    setFormOpen(true);
-  }
-
   function openEditForm(check) {
     setEditingCheck(check);
-    setMood(check.mood);
+    setMood(check.mood ?? null);
     setComment(check.comment ?? '');
     setError('');
     setSaving(false);
@@ -78,16 +66,9 @@ export default function MentalCheck({ checks = EMPTY_CHECKS, onChange }) {
     }
 
     const timestamp = new Date().toISOString();
-    const next = editingCheck
-      ? checks.map((check) => check.id === editingCheck.id
-        ? { ...check, mood, comment: cleanComment, updatedAt: timestamp }
-        : check)
-      : [...checks, {
-        id: createCheckId(),
-        mood,
-        comment: cleanComment,
-        createdAt: timestamp,
-      }];
+    const next = checks.map((check) => check.id === editingCheck.id
+      ? { ...check, mood, comment: cleanComment, updatedAt: timestamp }
+      : check);
 
     setSaving(true);
     setError('');
@@ -108,8 +89,7 @@ export default function MentalCheck({ checks = EMPTY_CHECKS, onChange }) {
           <span className="reflections-subtitle">A simple record of how you have been feeling</span>
         </div>
         <div className="reflections-header-actions">
-          <span className="notes-count">{checks.length} check{checks.length === 1 ? '' : 's'}</span>
-          <button type="button" className="reflection-add-btn" onClick={openForm} aria-label="Add mental check" title="Add mental check">+</button>
+          <span className="notes-count">{checks.length} day{checks.length === 1 ? '' : 's'}</span>
         </div>
       </div>
 
@@ -118,20 +98,24 @@ export default function MentalCheck({ checks = EMPTY_CHECKS, onChange }) {
       ) : (
         <div className="mental-check-board" aria-label="Mental check history">
           {checks.map((check, index) => {
-            const moodDetails = MOOD_BY_VALUE[check.mood] ?? MOOD_BY_VALUE.normal;
-            const dateLabel = formatCheckDate(check.createdAt);
-            const tooltip = [`${moodDetails.label}${dateLabel ? ` — ${dateLabel}` : ''}`, check.comment].filter(Boolean).join('\n');
+            const moodDetails = MOOD_BY_VALUE[check.mood];
+            const dateLabel = formatCheckDate(check);
+            const filled = Boolean(moodDetails);
+            const tooltip = filled
+              ? [`${moodDetails.label}${dateLabel ? ` - ${dateLabel}` : ''}`, check.comment].filter(Boolean).join('\n')
+              : `Fill in mental check${dateLabel ? ` for ${dateLabel}` : ''}`;
             return (
               <button
                 type="button"
-                className="mental-check-square"
+                className={`mental-check-square${filled ? '' : ' unfilled'}`}
                 key={check.id ?? `${check.createdAt}-${index}`}
-                style={{ '--mental-color': moodDetails.color }}
+                style={{ '--mental-color': moodDetails?.color ?? '#334155' }}
                 title={tooltip}
-                aria-label={`Edit ${tooltip}`}
+                aria-label={filled ? `Edit ${tooltip}` : tooltip}
                 onClick={() => openEditForm(check)}
               >
                 <span className="mental-check-date">{dateLabel}</span>
+                {!filled && <span className="mental-check-prompt" aria-hidden="true">+</span>}
               </button>
             );
           })}
@@ -143,8 +127,8 @@ export default function MentalCheck({ checks = EMPTY_CHECKS, onChange }) {
           <div className="modal mental-check-modal" role="dialog" aria-modal="true" aria-labelledby="mental-check-title" onMouseDown={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <h2 id="mental-check-title">{editingCheck ? 'Edit mental check' : 'How are you feeling?'}</h2>
-                <span className="modal-date">{editingCheck ? formatCheckDate(editingCheck.createdAt) : 'Add a mental health reflection'}</span>
+                <h2 id="mental-check-title">How are you feeling?</h2>
+                <span className="modal-date">{formatCheckDate(editingCheck)}</span>
               </div>
               <button type="button" className="modal-close" onClick={closeForm} aria-label="Close mental check form">×</button>
             </div>
@@ -183,7 +167,7 @@ export default function MentalCheck({ checks = EMPTY_CHECKS, onChange }) {
               {error && <p className="reflection-error">{error}</p>}
               <div className="modal-actions">
                 <button type="button" className="btn-ghost" onClick={closeForm} disabled={saving}>Cancel</button>
-                <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving…' : editingCheck ? 'Save changes' : 'Save check'}</button>
+                <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Saving…' : 'Save check'}</button>
               </div>
             </form>
           </div>
