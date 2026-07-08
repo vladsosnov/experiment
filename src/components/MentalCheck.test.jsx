@@ -2,12 +2,13 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import MentalCheck from './MentalCheck';
-import { ensureDailyMentalCheck } from './mentalChecksModel';
+import { ensureDailyMentalChecks } from './mentalChecksModel';
 
 describe('MentalCheck', () => {
   it('adds one unfilled check for the current local day', () => {
-    const next = ensureDailyMentalCheck(
+    const next = ensureDailyMentalChecks(
       [],
+      '2026-07-08',
       new Date(2026, 6, 8, 9, 30),
       () => 'mental-2026-07-08',
     );
@@ -29,7 +30,30 @@ describe('MentalCheck', () => {
       createdAt: new Date(2026, 6, 8, 7, 0).toISOString(),
     }];
 
-    expect(ensureDailyMentalCheck(checks, new Date(2026, 6, 8, 18, 0))).toBe(checks);
+    expect(ensureDailyMentalChecks(checks, '2026-07-08', new Date(2026, 6, 8, 18, 0))).toBe(checks);
+  });
+
+  it('adds unfilled squares for every missing day from the goal start through today', () => {
+    const next = ensureDailyMentalChecks(
+      [{
+        id: 'existing-july-5',
+        date: '2026-07-05',
+        mood: 'great',
+        comment: 'A strong day.',
+        createdAt: '2026-07-05T08:00:00.000Z',
+      }],
+      '2026-07-04',
+      new Date(2026, 6, 8, 9, 30),
+      (date) => `mental-${date}`,
+    );
+
+    expect(next.map((check) => [check.date, check.mood])).toEqual([
+      ['2026-07-04', null],
+      ['2026-07-05', 'great'],
+      ['2026-07-06', null],
+      ['2026-07-07', null],
+      ['2026-07-08', null],
+    ]);
   });
 
   it('starts with a closed form and an empty board message', () => {

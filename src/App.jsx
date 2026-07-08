@@ -10,7 +10,7 @@ import GoalEditModal from './components/GoalEditModal';
 import NotesTable from './components/NotesTable';
 import SelfReflections from './components/SelfReflections';
 import MentalCheck from './components/MentalCheck';
-import { ensureDailyMentalCheck } from './components/mentalChecksModel';
+import { ensureDailyMentalChecks } from './components/mentalChecksModel';
 import TodoInsights from './components/TodoInsights';
 import AllTodos from './components/AllTodos';
 import PasswordModal from './components/PasswordModal';
@@ -52,7 +52,7 @@ export default function App() {
     if (!unlocked) return;
     Promise.all([loadGoal(), loadDays(), loadReflections(), loadMentalChecks()]).then(([g, d, r, m]) => {
       const normalizedDays = applySeededPlanningTodo(g, d);
-      const normalizedMentalChecks = g ? ensureDailyMentalCheck(m) : m;
+      const normalizedMentalChecks = g ? ensureDailyMentalChecks(m, g.startDate) : m;
       setGoal(g);
       setDays(normalizedDays);
       setReflections(r);
@@ -99,7 +99,7 @@ export default function App() {
 
   async function handleGoalSave(newGoal) {
     const seededDays = applySeededPlanningTodo(newGoal, {});
-    const dailyMentalChecks = ensureDailyMentalCheck([]);
+    const dailyMentalChecks = ensureDailyMentalChecks([], newGoal.startDate);
     await Promise.all([
       saveGoal(newGoal),
       saveDays(seededDays),
@@ -167,7 +167,7 @@ export default function App() {
     importData(file)
       .then(async ({ goal: g, days: d, reflections: r, mentalChecks: m }) => {
         const normalizedDays = applySeededPlanningTodo(g, d);
-        const normalizedMentalChecks = ensureDailyMentalCheck(m);
+        const normalizedMentalChecks = ensureDailyMentalChecks(m, g.startDate);
         await Promise.all([
           saveGoal(g),
           saveDays(normalizedDays),

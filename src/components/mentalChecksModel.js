@@ -1,3 +1,5 @@
+import { dateRange } from '../utils/dates';
+
 function localDateString(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -17,19 +19,25 @@ export function mentalCheckDate(check) {
   return Number.isNaN(createdAt.getTime()) ? '' : localDateString(createdAt);
 }
 
-export function ensureDailyMentalCheck(checks, now = new Date(), makeId = createCheckId) {
+export function ensureDailyMentalChecks(checks, startDate, now = new Date(), makeId = createCheckId) {
   const currentChecks = Array.isArray(checks) ? checks : [];
-  const date = localDateString(now);
+  const today = localDateString(now);
+  const firstDate = startDate || today;
+  const existingDates = new Set(currentChecks.map(mentalCheckDate));
+  const missingDates = dateRange(firstDate, today).filter((date) => !existingDates.has(date));
 
-  if (currentChecks.some((check) => mentalCheckDate(check) === date)) {
+  if (missingDates.length === 0) {
     return currentChecks;
   }
 
-  return [...currentChecks, {
-    id: makeId(),
+  const missingChecks = missingDates.map((date) => ({
+    id: makeId(date),
     date,
     mood: null,
     comment: '',
     createdAt: now.toISOString(),
-  }];
+  }));
+
+  return [...currentChecks, ...missingChecks]
+    .sort((left, right) => mentalCheckDate(left).localeCompare(mentalCheckDate(right)));
 }
