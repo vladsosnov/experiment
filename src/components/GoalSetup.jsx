@@ -1,7 +1,15 @@
-import { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { daysBetween, todayString } from '../utils/dates';
 
-export default function GoalSetup({ onSave, onShowCompletedGoals, completedGoalsCount = 0 }) {
+export default function GoalSetup({
+  onSave,
+  onImportFile,
+  onShowCompletedGoals,
+  completedGoalsCount = 0,
+  importError = '',
+  onDismissImportError,
+}) {
+  const importRef = useRef(null);
   const today = todayString();
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState('');
@@ -99,13 +107,47 @@ export default function GoalSetup({ onSave, onShowCompletedGoals, completedGoals
           </button>
         </form>
 
-        <button
-          type="button"
-          className="goal-setup-completed-btn"
-          onClick={onShowCompletedGoals}
-        >
-          Completed goals ({completedGoalsCount})
-        </button>
+        {importError && (
+          <div className="import-error goal-setup-import-error">
+            {importError}
+            <button
+              type="button"
+              className="import-error-close"
+              onClick={onDismissImportError}
+              aria-label="Dismiss import error"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        <div className="goal-setup-secondary-actions">
+          <button
+            type="button"
+            className="goal-setup-secondary-btn"
+            onClick={() => {
+              onDismissImportError?.();
+              importRef.current?.click();
+            }}
+          >
+            Import goal
+          </button>
+          <button
+            type="button"
+            className="goal-setup-secondary-btn"
+            onClick={onShowCompletedGoals}
+          >
+            Completed goals ({completedGoalsCount})
+          </button>
+          <input
+            ref={importRef}
+            type="file"
+            accept=".json"
+            aria-label="Import goal backup"
+            hidden
+            onChange={onImportFile}
+          />
+        </div>
       </div>
     </div>
   );

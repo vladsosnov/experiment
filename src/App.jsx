@@ -215,7 +215,11 @@ export default function App() {
         setReflections(r);
         setMentalChecks(normalizedMentalChecks);
       })
-      .catch((msg) => setImportError(msg));
+      .catch((error) => setImportError(
+        typeof error === 'string'
+          ? error
+          : 'Could not import this goal. Your existing data was not changed.',
+      ));
     e.target.value = '';
   }
 
@@ -254,8 +258,11 @@ export default function App() {
     return (
       <GoalSetup
         onSave={handleGoalSave}
+        onImportFile={handleImportFile}
         onShowCompletedGoals={() => setPage('completed')}
         completedGoalsCount={completedGoals.length}
+        importError={importError}
+        onDismissImportError={() => setImportError('')}
       />
     );
   }
