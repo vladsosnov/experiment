@@ -13,7 +13,6 @@ import MentalCheck from './components/MentalCheck';
 import { ensureDailyMentalChecks, mentalCheckStartDate } from './components/mentalChecksModel';
 import CompletedGoals from './components/CompletedGoals';
 import TodoInsights from './components/TodoInsights';
-import AllTodos from './components/AllTodos';
 import PasswordModal from './components/PasswordModal';
 import {
   loadGoal,
@@ -30,7 +29,7 @@ import {
 } from './utils/storage';
 import { dateRange } from './utils/dates';
 import { getQuote } from './utils/quotes';
-import { exportData, importData } from './utils/backup';
+import { exportData, importData, persistImportedData } from './utils/backup';
 import { applySeededPlanningTodo, normalizeSavedDay } from './utils/seededTodos';
 import { createCompletedGoal } from './utils/completedGoals';
 import './App.css';
@@ -205,12 +204,12 @@ export default function App() {
       .then(async ({ goal: g, days: d, reflections: r, mentalChecks: m }) => {
         const normalizedDays = applySeededPlanningTodo(g, d);
         const normalizedMentalChecks = ensureDailyMentalChecks(m, mentalCheckStartDate(g));
-        await Promise.all([
-          saveGoal(g),
-          saveDays(normalizedDays),
-          saveReflections(r),
-          saveMentalChecks(normalizedMentalChecks),
-        ]);
+        await persistImportedData({
+          goal: g,
+          days: normalizedDays,
+          reflections: r,
+          mentalChecks: normalizedMentalChecks,
+        });
         setGoal(g);
         setDays(normalizedDays);
         setReflections(r);
@@ -342,7 +341,6 @@ export default function App() {
         <ProgressBar goal={goal} days={days} />
         <CalendarGrid goal={goal} days={days} onDayClick={handleDayClick} />
         <TodoInsights goal={goal} days={days} />
-        <AllTodos goal={goal} days={days} />
         <NotesTable goal={goal} days={days} />
         <SelfReflections reflections={reflections} onChange={handleReflectionsChange} />
         <MentalCheck checks={mentalChecks} onChange={handleMentalChecksChange} />

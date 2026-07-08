@@ -49,14 +49,18 @@ describe('exportData', () => {
     ({ exportData } = await import('./backup'));
   });
 
-  it('exports resolved goal and days data', async () => {
+  it('exports every active goal panel', async () => {
     loadGoal.mockResolvedValue({
       title: 'Marathon Prep',
       startDate: '2026-04-01',
       endDate: '2026-04-30',
     });
     loadDays.mockResolvedValue({
-      '2026-04-15': { status: 'green', note: '8km' },
+      '2026-04-15': {
+        status: 'green',
+        note: '8km',
+        todos: [{ id: 't1', text: 'Stretch', completed: true }],
+      },
     });
     loadReflections.mockResolvedValue([
       { id: 'r1', date: '2026-04-15', text: 'Felt behind all day' },
@@ -76,7 +80,11 @@ describe('exportData', () => {
       endDate: '2026-04-30',
     });
     expect(exported.days).toEqual({
-      '2026-04-15': { status: 'green', note: '8km' },
+      '2026-04-15': {
+        status: 'green',
+        note: '8km',
+        todos: [{ id: 't1', text: 'Stretch', completed: true }],
+      },
     });
     expect(exported.reflections).toEqual([
       { id: 'r1', date: '2026-04-15', text: 'Felt behind all day' },
@@ -91,14 +99,15 @@ describe('exportData', () => {
 
 describe('importData', () => {
   let importData;
+  let persistImportedData;
 
   beforeEach(async () => {
     vi.resetModules();
     vi.clearAllMocks();
-    ({ importData } = await import('./backup'));
+    ({ importData, persistImportedData } = await import('./backup'));
   });
 
-  it('imports reflections when they are present in the backup', async () => {
+  it('returns every imported panel for the app to persist', async () => {
     const file = {
       name: 'backup.json',
     };
@@ -109,7 +118,11 @@ describe('importData', () => {
         endDate: '2026-04-30',
       },
       days: {
-        '2026-04-15': { status: 'green', note: '8km' },
+        '2026-04-15': {
+          status: 'green',
+          note: '8km',
+          todos: [{ id: 't1', text: 'Stretch', completed: true }],
+        },
       },
       reflections: [
         { id: 'r1', date: '2026-04-15', text: 'Felt behind all day' },
@@ -131,8 +144,6 @@ describe('importData', () => {
       reflections: payload.reflections,
       mentalChecks: payload.mentalChecks,
     });
-    expect(saveReflections).toHaveBeenCalledWith(payload.reflections);
-    expect(saveMentalChecks).toHaveBeenCalledWith(payload.mentalChecks);
   });
 
   it('keeps older backups compatible by defaulting mental checks to an empty array', async () => {
@@ -149,6 +160,21 @@ describe('importData', () => {
     };
 
     await expect(importData(file)).resolves.toMatchObject({ mentalChecks: [] });
-    expect(saveMentalChecks).toHaveBeenCalledWith([]);
+  });
+
+  it('persists every imported panel together', async () => {
+    const imported = {
+      goal: { title: 'Imported goal' },
+      days: { '2026-04-15': { note: 'Imported note', todos: [] } },
+      reflections: [{ id: 'r1', text: 'Imported reflection' }],
+      mentalChecks: [{ id: 'm1', mood: 'good', comment: 'Imported check' }],
+    };
+
+    await persistImportedData(imported);
+
+    expect(saveGoal).toHaveBeenCalledWith(imported.goal);
+    expect(saveDays).toHaveBeenCalledWith(imported.days);
+    expect(saveReflections).toHaveBeenCalledWith(imported.reflections);
+    expect(saveMentalChecks).toHaveBeenCalledWith(imported.mentalChecks);
   });
 });

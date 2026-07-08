@@ -35,6 +35,15 @@ export async function exportData() {
   URL.revokeObjectURL(url);
 }
 
+export async function persistImportedData({ goal, days, reflections, mentalChecks }) {
+  await Promise.all([
+    saveGoal(goal),
+    saveDays(days),
+    saveReflections(reflections),
+    saveMentalChecks(mentalChecks),
+  ]);
+}
+
 /**
  * Parse and validate an imported File object.
  * Returns a Promise that resolves to { goal, days, reflections, mentalChecks } or rejects with an error message.
@@ -59,10 +68,6 @@ export function importData(file) {
         }
         const reflections = Array.isArray(parsed.reflections) ? parsed.reflections : [];
         const mentalChecks = Array.isArray(parsed.mentalChecks) ? parsed.mentalChecks : [];
-        saveGoal(parsed.goal);
-        saveDays(parsed.days);
-        saveReflections(reflections);
-        saveMentalChecks(mentalChecks);
         resolve({ goal: parsed.goal, days: parsed.days, reflections, mentalChecks });
       } catch {
         reject('Could not parse the file. Make sure it is a valid backup.');
