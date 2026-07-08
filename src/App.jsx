@@ -245,6 +245,12 @@ export default function App() {
     ));
   }
 
+  function handleShowCompletedGoals() {
+    setToast(null);
+    setGoalMenuOpen(false);
+    setPage('completed');
+  }
+
   if (!unlocked) {
     return <PasswordModal onUnlock={handleUnlock} />;
   }
@@ -281,7 +287,7 @@ export default function App() {
       <GoalSetup
         onSave={handleGoalSave}
         onImportFile={handleImportFile}
-        onShowCompletedGoals={() => setPage('completed')}
+        onShowCompletedGoals={handleShowCompletedGoals}
         completedGoalsCount={completedGoals.length}
         importError={importError}
         onDismissImportError={() => setImportError('')}
@@ -328,10 +334,7 @@ export default function App() {
               <button
                 type="button"
                 className="goal-menu-item"
-                onClick={() => {
-                  setPage('completed');
-                  setGoalMenuOpen(false);
-                }}
+                onClick={handleShowCompletedGoals}
               >
                 Completed goals
               </button>
