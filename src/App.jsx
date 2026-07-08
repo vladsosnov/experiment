@@ -12,6 +12,7 @@ import SelfReflections from './components/SelfReflections';
 import MentalCheck from './components/MentalCheck';
 import { ensureDailyMentalChecks, mentalCheckStartDate } from './components/mentalChecksModel';
 import CompletedGoals from './components/CompletedGoals';
+import CompletionCelebration from './components/CompletionCelebration';
 import TodoInsights from './components/TodoInsights';
 import PasswordModal from './components/PasswordModal';
 import {
@@ -25,6 +26,7 @@ import {
   saveMentalChecks,
   loadCompletedGoals,
   archiveCompletedGoal,
+  deleteCompletedGoal,
   clearActiveGoal,
 } from './utils/storage';
 import { dateRange } from './utils/dates';
@@ -43,6 +45,7 @@ export default function App() {
   const [reflections, setReflections] = useState([]);
   const [mentalChecks, setMentalChecks] = useState([]);
   const [completedGoals, setCompletedGoals] = useState([]);
+  const [celebrationGoal, setCelebrationGoal] = useState(null);
   const [page, setPage] = useState('tracker');
   const [loading, setLoading] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
   const [modalDate, setModalDate] = useState(null);
@@ -152,11 +155,13 @@ export default function App() {
       try {
         await archiveCompletedGoal(completedGoal);
         setCompletedGoals((current) => [completedGoal, ...current]);
+        setCelebrationGoal(completedGoal);
         setGoal(null);
         setDays({});
         setReflections([]);
         setMentalChecks([]);
         setModalDate(null);
+        setToast(null);
         setPage('tracker');
       } catch {
         setImportError('Could not archive the completed goal. Your active goal is still safe. Try again.');
@@ -233,6 +238,13 @@ export default function App() {
     setMentalChecks([]);
   }
 
+  async function handleDeleteCompletedGoal(completedGoalId) {
+    await deleteCompletedGoal(completedGoalId);
+    setCompletedGoals((current) => (
+      current.filter((completedGoal) => completedGoal.id !== completedGoalId)
+    ));
+  }
+
   if (!unlocked) {
     return <PasswordModal onUnlock={handleUnlock} />;
   }
@@ -241,11 +253,21 @@ export default function App() {
     return <div className="app-loading">Loading…</div>;
   }
 
+  if (celebrationGoal) {
+    return (
+      <CompletionCelebration
+        completedGoal={celebrationGoal}
+        onContinue={() => setCelebrationGoal(null)}
+      />
+    );
+  }
+
   if (page === 'completed') {
     return (
       <CompletedGoals
         completedGoals={completedGoals}
         onBack={() => setPage('tracker')}
+        onDelete={handleDeleteCompletedGoal}
       />
     );
   }

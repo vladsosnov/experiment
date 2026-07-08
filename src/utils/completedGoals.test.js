@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createCompletedGoal, previewCompletedGoal } from './completedGoals';
+import {
+  createCompletedGoal,
+  exportCompletedGoal,
+  previewCompletedGoal,
+} from './completedGoals';
 
 afterEach(() => {
   vi.useRealTimers();
@@ -56,5 +60,34 @@ describe('createCompletedGoal', () => {
     expect(previewLink.click).toHaveBeenCalledTimes(1);
     vi.advanceTimersByTime(60_000);
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:completed-goal');
+  });
+
+  it('exports a completed goal as a named JSON file', async () => {
+    let exportedBlob;
+    globalThis.URL.createObjectURL = vi.fn((blob) => {
+      exportedBlob = blob;
+      return 'blob:completed-export';
+    });
+    globalThis.URL.revokeObjectURL = vi.fn();
+    const exportLink = { click: vi.fn() };
+    globalThis.document = {
+      createElement: vi.fn(() => exportLink),
+    };
+    const completedGoal = {
+      id: 'completed-experiment',
+      completedAt: '2026-07-10T18:00:00.000Z',
+      goal: { title: 'My Experiment' },
+    };
+
+    exportCompletedGoal(completedGoal);
+
+    expect(exportedBlob.type).toBe('application/json');
+    expect(JSON.parse(await exportedBlob.text())).toEqual(completedGoal);
+    expect(exportLink).toMatchObject({
+      href: 'blob:completed-export',
+      download: 'my-experiment-2026-07-10.json',
+    });
+    expect(exportLink.click).toHaveBeenCalledTimes(1);
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:completed-export');
   });
 });

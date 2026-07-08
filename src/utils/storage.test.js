@@ -30,6 +30,7 @@ describe('reflection and mental check storage', () => {
   let saveMentalChecks;
   let archiveCompletedGoal;
   let loadCompletedGoals;
+  let deleteCompletedGoal;
 
   beforeEach(async () => {
     vi.resetModules();
@@ -41,6 +42,7 @@ describe('reflection and mental check storage', () => {
       saveMentalChecks,
       archiveCompletedGoal,
       loadCompletedGoals,
+      deleteCompletedGoal,
       clearActiveGoal,
     } = await import('./storage'));
   });
@@ -153,5 +155,15 @@ describe('reflection and mental check storage', () => {
 
     await expect(loadCompletedGoals()).resolves.toEqual([newer, older]);
     expect(getDocs).toHaveBeenCalledWith({ db: 'mock-db', name: 'completedGoals' });
+  });
+
+  it('deletes one completed goal JSON document', async () => {
+    await deleteCompletedGoal('completed-2');
+
+    expect(deleteDoc).toHaveBeenCalledWith({
+      db: 'mock-db',
+      collection: 'completedGoals',
+      id: 'completed-2',
+    });
   });
 });

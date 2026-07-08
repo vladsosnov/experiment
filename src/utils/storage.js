@@ -102,6 +102,10 @@ export async function archiveCompletedGoal(completedGoal) {
   await batch.commit();
 }
 
+export async function deleteCompletedGoal(completedGoalId) {
+  await deleteDoc(doc(db, COMPLETED_GOALS_COLLECTION, completedGoalId));
+}
+
 export async function clearActiveGoal() {
   await Promise.all([
     deleteDoc(doc(db, DATA_COLLECTION, GOAL_DOC)),

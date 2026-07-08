@@ -20,6 +20,7 @@ describe('CompletedGoals', () => {
           mentalChecks: [],
         }]}
         onBack={vi.fn()}
+        onDelete={vi.fn()}
       />,
     );
 
@@ -27,5 +28,7 @@ describe('CompletedGoals', () => {
     expect(html).toContain('Experiment');
     expect(html).toContain('Apr 6, 2026 - Jul 10, 2026');
     expect(html).toContain('aria-label="Preview Experiment as JSON"');
+    expect(html).toContain('aria-label="Export Experiment as JSON"');
+    expect(html).toContain('aria-label="Delete completed goal Experiment"');
   });
 });
