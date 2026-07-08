@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { daysBetween, todayString } from '../utils/dates';
 
-export default function GoalSetup({ onSave }) {
+export default function GoalSetup({ onSave, onShowCompletedGoals, completedGoalsCount = 0 }) {
   const today = todayString();
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState('');
@@ -98,6 +98,14 @@ export default function GoalSetup({ onSave }) {
             Start Tracking →
           </button>
         </form>
+
+        <button
+          type="button"
+          className="goal-setup-completed-btn"
+          onClick={onShowCompletedGoals}
+        >
+          Completed goals ({completedGoalsCount})
+        </button>
       </div>
     </div>
   );

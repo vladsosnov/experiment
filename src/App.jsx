@@ -11,6 +11,7 @@ import NotesTable from './components/NotesTable';
 import SelfReflections from './components/SelfReflections';
 import MentalCheck from './components/MentalCheck';
 import { ensureDailyMentalChecks, mentalCheckStartDate } from './components/mentalChecksModel';
+import CompletedGoals from './components/CompletedGoals';
 import TodoInsights from './components/TodoInsights';
 import AllTodos from './components/AllTodos';
 import PasswordModal from './components/PasswordModal';
@@ -23,12 +24,15 @@ import {
   saveReflections,
   loadMentalChecks,
   saveMentalChecks,
-  clearAll,
+  loadCompletedGoals,
+  archiveCompletedGoal,
+  clearActiveGoal,
 } from './utils/storage';
 import { dateRange } from './utils/dates';
 import { getQuote } from './utils/quotes';
 import { exportData, importData } from './utils/backup';
 import { applySeededPlanningTodo, normalizeSavedDay } from './utils/seededTodos';
+import { createCompletedGoal } from './utils/completedGoals';
 import './App.css';
 
 const SESSION_KEY = 'goaltracker_unlocked';
@@ -39,6 +43,8 @@ export default function App() {
   const [days, setDays] = useState({});
   const [reflections, setReflections] = useState([]);
   const [mentalChecks, setMentalChecks] = useState([]);
+  const [completedGoals, setCompletedGoals] = useState([]);
+  const [page, setPage] = useState('tracker');
   const [loading, setLoading] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
   const [modalDate, setModalDate] = useState(null);
   const [toast, setToast] = useState(null);
@@ -50,13 +56,20 @@ export default function App() {
 
   useEffect(() => {
     if (!unlocked) return;
-    Promise.all([loadGoal(), loadDays(), loadReflections(), loadMentalChecks()]).then(([g, d, r, m]) => {
+    Promise.all([
+      loadGoal(),
+      loadDays(),
+      loadReflections(),
+      loadMentalChecks(),
+      loadCompletedGoals(),
+    ]).then(([g, d, r, m, completed]) => {
       const normalizedDays = applySeededPlanningTodo(g, d);
       const normalizedMentalChecks = g ? ensureDailyMentalChecks(m, mentalCheckStartDate(g)) : m;
       setGoal(g);
       setDays(normalizedDays);
       setReflections(r);
       setMentalChecks(normalizedMentalChecks);
+      setCompletedGoals(completed);
       if (g && normalizedDays !== d) {
         saveDays(normalizedDays);
       }
@@ -128,6 +141,30 @@ export default function App() {
       }
     }
     const normalizedDays = applySeededPlanningTodo(goal, next);
+
+    if (hasCompletedGoal(goal, normalizedDays)) {
+      const completedGoal = createCompletedGoal({
+        goal,
+        days: normalizedDays,
+        reflections,
+        mentalChecks,
+      });
+
+      try {
+        await archiveCompletedGoal(completedGoal);
+        setCompletedGoals((current) => [completedGoal, ...current]);
+        setGoal(null);
+        setDays({});
+        setReflections([]);
+        setMentalChecks([]);
+        setModalDate(null);
+        setPage('tracker');
+      } catch {
+        setImportError('Could not archive the completed goal. Your active goal is still safe. Try again.');
+      }
+      return;
+    }
+
     await saveDays(normalizedDays);
     setDays(normalizedDays);
   }
@@ -185,8 +222,8 @@ export default function App() {
 
   async function handleReset() {
     setGoalMenuOpen(false);
-    if (!confirm('Reset all data? This cannot be undone.')) return;
-    await clearAll();
+    if (!confirm('Reset the active goal? This cannot be undone.')) return;
+    await clearActiveGoal();
     setGoal(null);
     setDays({});
     setReflections([]);
@@ -201,12 +238,27 @@ export default function App() {
     return <div className="app-loading">Loading…</div>;
   }
 
+  if (page === 'completed') {
+    return (
+      <CompletedGoals
+        completedGoals={completedGoals}
+        onBack={() => setPage('tracker')}
+      />
+    );
+  }
+
   const modalDayNumber = modalDate && goal
     ? dateRange(goal.startDate, goal.endDate).indexOf(modalDate) + 1
     : null;
 
   if (!goal) {
-    return <GoalSetup onSave={handleGoalSave} />;
+    return (
+      <GoalSetup
+        onSave={handleGoalSave}
+        onShowCompletedGoals={() => setPage('completed')}
+        completedGoalsCount={completedGoals.length}
+      />
+    );
   }
 
   return (
@@ -245,8 +297,18 @@ export default function App() {
               <button type="button" className="goal-menu-item" onClick={handleImportClick}>
                 Import
               </button>
+              <button
+                type="button"
+                className="goal-menu-item"
+                onClick={() => {
+                  setPage('completed');
+                  setGoalMenuOpen(false);
+                }}
+              >
+                Completed goals
+              </button>
               <button type="button" className="goal-menu-item danger" onClick={handleReset}>
-                Reset
+                Reset active goal
               </button>
             </div>
           )}

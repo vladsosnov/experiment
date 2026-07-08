@@ -1,11 +1,20 @@
 import { db } from '../firebase';
-import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  writeBatch,
+} from 'firebase/firestore';
 
 const DATA_COLLECTION = 'data';
 const GOAL_DOC = 'goal';
 const DAYS_DOC = 'days';
 const REFLECTIONS_DOC = 'reflections';
 const MENTAL_CHECKS_DOC = 'mentalChecks';
+const COMPLETED_GOALS_COLLECTION = 'completedGoals';
 
 export async function loadGoal() {
   try {
@@ -66,7 +75,34 @@ export async function saveMentalChecks(checks) {
   await setDoc(doc(db, DATA_COLLECTION, MENTAL_CHECKS_DOC), { value: clean });
 }
 
-export async function clearAll() {
+export async function loadCompletedGoals() {
+  try {
+    const snap = await getDocs(collection(db, COMPLETED_GOALS_COLLECTION));
+    return snap.docs
+      .map((completedGoalDoc) => completedGoalDoc.data())
+      .sort((left, right) => right.completedAt.localeCompare(left.completedAt));
+  } catch {
+    return [];
+  }
+}
+
+export async function archiveCompletedGoal(completedGoal) {
+  const cleanCompletedGoal = JSON.parse(JSON.stringify(completedGoal));
+  const batch = writeBatch(db);
+
+  batch.set(
+    doc(db, COMPLETED_GOALS_COLLECTION, cleanCompletedGoal.id),
+    cleanCompletedGoal,
+  );
+  batch.set(doc(db, DATA_COLLECTION, GOAL_DOC), { value: null });
+  batch.set(doc(db, DATA_COLLECTION, DAYS_DOC), { value: {} });
+  batch.set(doc(db, DATA_COLLECTION, REFLECTIONS_DOC), { value: [] });
+  batch.set(doc(db, DATA_COLLECTION, MENTAL_CHECKS_DOC), { value: [] });
+
+  await batch.commit();
+}
+
+export async function clearActiveGoal() {
   await Promise.all([
     deleteDoc(doc(db, DATA_COLLECTION, GOAL_DOC)),
     deleteDoc(doc(db, DATA_COLLECTION, DAYS_DOC)),
