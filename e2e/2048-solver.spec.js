@@ -7,6 +7,13 @@ const MIRRORED_BOARD = [
   0, 0, 0, 0,
 ];
 
+const RISKY_2048_BOARD = [
+  1024, 1024, 0, 0,
+  2, 4, 8, 16,
+  4, 8, 16, 32,
+  8, 16, 32, 64,
+];
+
 async function fillBoard(page, values) {
   for (const [index, value] of values.entries()) {
     if (!value) continue;
@@ -31,8 +38,23 @@ test('player can mirror a phone board and apply the suggested move', async ({ pa
   await expect(page.getByLabel('Row 3 column 1')).toHaveValue('4');
   await expect(page.getByLabel('Row 3 column 2')).toHaveValue('2');
   await expect(page.getByLabel('Row 3 column 3')).toHaveValue('');
+  await expect(page.getByTestId('recommended-move')).toContainText('Add spawned tile');
+  await expect(page.getByRole('button', { name: 'Left' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Classic' }).click();
+  await expect(page.getByTestId('recommended-move')).toContainText('Add spawned tile');
+  await page.getByRole('button', { name: 'Max points' }).click();
+  await expect(page.getByTestId('recommended-move')).toContainText('Add spawned tile');
+
+  await page.getByLabel('Row 4 column 4').fill('2');
+  await expect(page.getByTestId('recommended-move')).not.toContainText('Add spawned tile');
+  await expect(page.getByTestId('recommended-move')).toContainText('Confidence');
 
   await page.getByRole('button', { name: 'Clear' }).click();
   await expect(page.getByLabel('Row 1 column 1')).toHaveValue('');
   await expect(page.getByTestId('recommended-move')).toContainText('No legal move');
+
+  await fillBoard(page, RISKY_2048_BOARD);
+  await expect(page.getByTestId('recommended-move')).toContainText('Up');
+  await expect(page.getByRole('button', { name: 'Left' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Right' })).toBeDisabled();
 });

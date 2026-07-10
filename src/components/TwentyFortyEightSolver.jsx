@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   DIRECTION_LABELS,
   DIRECTIONS,
+  MAX_SCORE_BEFORE_2048,
   boardFromCells,
   flattenBoard,
   getMaxTile,
@@ -15,6 +16,19 @@ const MODES = [
   { id: 'fast', label: 'Fast', depth: 2, chanceCellLimit: 4 },
   { id: 'strong', label: 'Strong', depth: 4, chanceCellLimit: 4 },
   { id: 'deep', label: 'Deep', depth: 5, chanceCellLimit: 4 },
+];
+
+const OBJECTIVES = [
+  {
+    id: 'max-score-no-2048',
+    label: 'Max points',
+    forbiddenTile: 2048,
+  },
+  {
+    id: 'classic',
+    label: 'Classic',
+    forbiddenTile: null,
+  },
 ];
 
 const SAMPLE_BOARD = [
@@ -53,15 +67,31 @@ function formatConfidence(value) {
 export default function TwentyFortyEightSolver({ onBack }) {
   const [cells, setCells] = useState(() => cellsToInputs(Array(16).fill(0)));
   const [modeId, setModeId] = useState('strong');
+  const [objectiveId, setObjectiveId] = useState('max-score-no-2048');
+  const [awaitingSpawn, setAwaitingSpawn] = useState(false);
   const mode = MODES.find((item) => item.id === modeId) ?? MODES[1];
+  const objective = OBJECTIVES.find((item) => item.id === objectiveId) ?? OBJECTIVES[0];
 
   const board = useMemo(() => boardFromCells(cells), [cells]);
   const validation = useMemo(() => validateBoard(board), [board]);
-  const recommendation = useMemo(() => (
-    validation.valid
+  const recommendation = useMemo(() => {
+    if (awaitingSpawn) {
+      return {
+        move: null,
+        reason: 'awaiting-spawn',
+        candidates: [],
+        confidence: 0,
+        depth: 0,
+        nodes: 0,
+      };
+    }
+
+    return validation.valid
       ? recommendMove(board, {
         depth: mode.depth,
         chanceCellLimit: mode.chanceCellLimit,
+        forbiddenTile: objective.forbiddenTile,
+        objective: objective.id,
         timeLimitMs: mode.id === 'deep' ? 1200 : 0,
       })
       : {
@@ -71,15 +101,33 @@ export default function TwentyFortyEightSolver({ onBack }) {
         candidates: [],
         confidence: 0,
       }
-  ), [board, mode, validation]);
+  }, [awaitingSpawn, board, mode, objective, validation]);
 
   const flatBoard = flattenBoard(board);
   const maxTile = getMaxTile(board);
-  const bestCandidate = recommendation.candidates[0] ?? null;
-  const previewCells = bestCandidate ? flattenBoard(bestCandidate.resultBoard) : flatBoard;
+  const recommendationTitle = awaitingSpawn
+    ? 'Add spawned tile'
+    : recommendation.reason === 'forbidden-tile' ? '2048 reached'
+      : recommendation.reason === 'no-safe-move' ? 'No safe move'
+        : recommendation.move ? recommendation.label : 'No legal move';
+  const recommendationDetail = awaitingSpawn
+    ? 'Waiting for the real 2 or 4'
+    : objective.forbiddenTile && recommendation.reason === 'forbidden-tile'
+      ? 'Game is over in max-points mode'
+      : objective.forbiddenTile && recommendation.reason === 'no-safe-move'
+        ? 'Only 2048-making moves remain'
+    : `Confidence ${formatConfidence(recommendation.confidence)}`;
 
   function updateCell(index, value) {
     const digitsOnly = value.replace(/\D/g, '');
+    const shouldResolveSpawn = awaitingSpawn
+      && cells[index] === ''
+      && ['2', '4'].includes(digitsOnly);
+
+    if (shouldResolveSpawn) {
+      setAwaitingSpawn(false);
+    }
+
     setCells((current) => {
       const next = current.slice();
       next[index] = digitsOnly === '0' ? '' : digitsOnly;
@@ -88,10 +136,12 @@ export default function TwentyFortyEightSolver({ onBack }) {
   }
 
   function loadSampleBoard() {
+    setAwaitingSpawn(false);
     setCells(cellsToInputs(SAMPLE_BOARD));
   }
 
   function clearBoard() {
+    setAwaitingSpawn(false);
     setCells(cellsToInputs(Array(16).fill(0)));
   }
 
@@ -99,13 +149,16 @@ export default function TwentyFortyEightSolver({ onBack }) {
     if (!validation.valid) return;
     const result = moveBoard(board, direction);
     if (!result.moved) return;
+    if (objective.forbiddenTile && getMaxTile(result.board) >= objective.forbiddenTile) return;
     setCells(cellsToInputs(flattenBoard(result.board)));
+    setAwaitingSpawn(true);
   }
 
   function handlePaste(event) {
     const nextCells = parsePastedBoard(event.clipboardData.getData('text'));
     if (!nextCells) return;
     event.preventDefault();
+    setAwaitingSpawn(false);
     setCells(nextCells);
   }
 
@@ -186,6 +239,20 @@ export default function TwentyFortyEightSolver({ onBack }) {
             <span>{mode.label}</span>
           </div>
 
+          <div className="solver-objective-group" aria-label="Objective">
+            {OBJECTIVES.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={item.id === objectiveId ? 'active' : ''}
+                aria-pressed={item.id === objectiveId}
+                onClick={() => setObjectiveId(item.id)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
           <div className="solver-mode-group" aria-label="Search strength">
             {MODES.map((item) => (
               <button
@@ -200,39 +267,49 @@ export default function TwentyFortyEightSolver({ onBack }) {
             ))}
           </div>
 
-          <div className="solver-recommendation" data-testid="recommended-move">
+          <div
+            className={`solver-recommendation${awaitingSpawn ? ' awaiting-spawn' : ''}`}
+            data-testid="recommended-move"
+          >
             <span className="solver-recommendation-label">
-              {recommendation.move ? recommendation.label : 'No legal move'}
+              {recommendationTitle}
             </span>
             <span className="solver-confidence">
-              Confidence {formatConfidence(recommendation.confidence)}
+              {recommendationDetail}
             </span>
           </div>
 
           <div className="solver-direction-actions">
-            {DIRECTIONS.map((direction) => (
-              <button
-                key={direction}
-                type="button"
-                className={recommendation.move === direction ? 'recommended' : ''}
-                disabled={!validation.valid || !moveBoard(board, direction).moved}
-                onClick={() => applyMove(direction)}
-              >
-                {DIRECTION_LABELS[direction]}
-              </button>
-            ))}
+            {DIRECTIONS.map((direction) => {
+              const directionResult = moveBoard(board, direction);
+              const createsForbiddenTile = objective.forbiddenTile
+                && getMaxTile(directionResult.board) >= objective.forbiddenTile;
+
+              return (
+                <button
+                  key={direction}
+                  type="button"
+                  className={recommendation.move === direction ? 'recommended' : ''}
+                  disabled={
+                    awaitingSpawn
+                    || !validation.valid
+                    || !directionResult.moved
+                    || createsForbiddenTile
+                  }
+                  onClick={() => applyMove(direction)}
+                >
+                  {DIRECTION_LABELS[direction]}
+                </button>
+              );
+            })}
           </div>
 
-          <div className="solver-preview-grid" aria-label="Recommended result board">
-            {previewCells.map((value, index) => (
-              <span
-                key={`${index}-${value}`}
-                className={`solver-preview-cell tile-rank-${getTileRank(value)}`}
-              >
-                {value || ''}
-              </span>
-            ))}
-          </div>
+          {objective.forbiddenTile && (
+            <div className="solver-score-cap">
+              <strong>{MAX_SCORE_BEFORE_2048.toLocaleString('en-US')}</strong>
+              <span>theoretical score cap before 2048</span>
+            </div>
+          )}
         </section>
       </main>
 

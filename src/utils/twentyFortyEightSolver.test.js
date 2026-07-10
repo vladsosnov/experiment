@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  MAX_SCORE_BEFORE_2048,
   boardFromCells,
+  getMaxScoreBeforeTile,
   getMaxTile,
   moveBoard,
   recommendMove,
@@ -106,5 +108,48 @@ describe('recommendMove', () => {
     expect(recommendation.move).toBe('left');
     expect(recommendation.confidence).toBeGreaterThan(0.25);
     expect(getMaxTile(recommendation.resultBoard)).toBe(1024);
+  });
+
+  it('does not recommend a move that creates 2048 in max-points mode', () => {
+    const recommendation = recommendMove(boardFromCells([
+      1024, 1024, 0, 0,
+      2, 4, 8, 16,
+      4, 8, 16, 32,
+      8, 16, 32, 64,
+    ]), {
+      depth: 3,
+      chanceCellLimit: 4,
+      forbiddenTile: 2048,
+      objective: 'max-score-no-2048',
+    });
+
+    expect(recommendation.move).not.toBe('left');
+    expect(recommendation.move).not.toBe('right');
+    expect(recommendation.candidates.every((candidate) => (
+      getMaxTile(candidate.resultBoard) < 2048
+    ))).toBe(true);
+  });
+
+  it('treats an existing 2048 tile as terminal in max-points mode', () => {
+    const recommendation = recommendMove(boardFromCells([
+      2048, 1024, 0, 0,
+      2, 4, 8, 16,
+      4, 8, 16, 32,
+      8, 16, 32, 64,
+    ]), {
+      forbiddenTile: 2048,
+      objective: 'max-score-no-2048',
+      depth: 1,
+    });
+
+    expect(recommendation.move).toBe(null);
+    expect(recommendation.reason).toBe('forbidden-tile');
+  });
+});
+
+describe('getMaxScoreBeforeTile', () => {
+  it('calculates the theoretical score cap before creating 2048', () => {
+    expect(MAX_SCORE_BEFORE_2048).toBe(147456);
+    expect(getMaxScoreBeforeTile(2048)).toBe(147456);
   });
 });

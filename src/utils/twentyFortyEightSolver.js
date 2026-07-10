@@ -13,6 +13,8 @@ const TILE_PROBABILITIES = [
   { value: 4, probability: 0.1 },
 ];
 
+export const MAX_SCORE_BEFORE_2048 = getMaxScoreBeforeTile(2048);
+
 const SNAKE_PATTERNS = [
   [
     [15, 14, 13, 12],
@@ -245,6 +247,14 @@ function logTile(value) {
   return value > 0 ? Math.log2(value) : 0;
 }
 
+export function getMaxScoreBeforeTile(forbiddenTile, boardSize = BOARD_SIZE) {
+  const maxTile = forbiddenTile / 2;
+  const maxTileRank = logTile(maxTile);
+  const scorePerMaxTile = (maxTileRank - 1) * maxTile;
+
+  return boardSize * boardSize * scorePerMaxTile;
+}
+
 function countMergeOpportunities(board) {
   let opportunities = 0;
 
@@ -258,6 +268,20 @@ function countMergeOpportunities(board) {
   }
 
   return opportunities;
+}
+
+function countAdjacentValuePairs(board, targetValue) {
+  let pairs = 0;
+
+  for (let row = 0; row < BOARD_SIZE; row += 1) {
+    for (let column = 0; column < BOARD_SIZE; column += 1) {
+      if (board[row][column] !== targetValue) continue;
+      if (column < BOARD_SIZE - 1 && board[row][column + 1] === targetValue) pairs += 1;
+      if (row < BOARD_SIZE - 1 && board[row + 1][column] === targetValue) pairs += 1;
+    }
+  }
+
+  return pairs;
 }
 
 function smoothnessScore(board) {
@@ -333,11 +357,21 @@ function maxTileInCorner(board) {
   ].includes(maxTile);
 }
 
-export function scoreBoard(board) {
+export function scoreBoard(board, options = {}) {
   const emptyCount = getEmptyCells(board).length;
   const maxTile = getMaxTile(board);
+  if (options.forbiddenTile && maxTile >= options.forbiddenTile) {
+    return -1000000000;
+  }
+
   const maxRank = logTile(maxTile);
   const mergeOpportunities = countMergeOpportunities(board);
+  const dangerousPairs = options.forbiddenTile
+    ? countAdjacentValuePairs(board, options.forbiddenTile / 2)
+    : 0;
+  const scoreObjectiveBonus = options.objective === 'max-score-no-2048'
+    ? mergeOpportunities * 2400 + maxRank * maxRank * 180
+    : 0;
 
   return (
     emptyCount * 3200
@@ -348,6 +382,8 @@ export function scoreBoard(board) {
     + snakeScore(board) * 1.35
     + maxRank * maxRank * 85
     + (maxTileInCorner(board) ? 5200 : 0)
+    + scoreObjectiveBonus
+    - dangerousPairs * 22000
   );
 }
 
@@ -374,19 +410,25 @@ function withTile(board, row, column, value) {
   return next;
 }
 
-function getPlayableMoves(board) {
-  return DIRECTIONS
-    .map((direction) => ({ direction, result: moveBoard(board, direction) }))
-    .filter(({ result }) => result.moved);
+function hasForbiddenTile(board, forbiddenTile) {
+  return Boolean(forbiddenTile) && getMaxTile(board) >= forbiddenTile;
 }
 
-function rankChanceCells(board, emptyCells, limit) {
+function getPlayableMoves(board, context = {}) {
+  return DIRECTIONS
+    .map((direction) => ({ direction, result: moveBoard(board, direction) }))
+    .filter(({ result }) => (
+      result.moved && !hasForbiddenTile(result.board, context.forbiddenTile)
+    ));
+}
+
+function rankChanceCells(board, emptyCells, limit, context) {
   if (emptyCells.length <= limit) return emptyCells;
 
   return emptyCells
     .map((cell) => ({
       ...cell,
-      risk: scoreBoard(withTile(board, cell.row, cell.column, 2)),
+      risk: scoreBoard(withTile(board, cell.row, cell.column, 2), context.evaluation),
     }))
     .sort((a, b) => a.risk - b.risk)
     .slice(0, limit)
@@ -395,14 +437,14 @@ function rankChanceCells(board, emptyCells, limit) {
 
 function expectimaxPlayer(board, depth, context) {
   context.nodes += 1;
-  if (depth <= 0 || hasTimedOut(context)) return scoreBoard(board);
+  if (depth <= 0 || hasTimedOut(context)) return scoreBoard(board, context.evaluation);
 
   const key = `p:${depth}:${getBoardKey(board)}`;
   if (context.cache.has(key)) return context.cache.get(key);
 
-  const moves = getPlayableMoves(board);
+  const moves = getPlayableMoves(board, context);
   if (moves.length === 0) {
-    const terminalScore = scoreBoard(board) - 100000;
+    const terminalScore = scoreBoard(board, context.evaluation) - 100000;
     context.cache.set(key, terminalScore);
     return terminalScore;
   }
@@ -420,7 +462,7 @@ function expectimaxPlayer(board, depth, context) {
 
 function expectimaxChance(board, depth, context) {
   context.nodes += 1;
-  if (depth <= 0 || hasTimedOut(context)) return scoreBoard(board);
+  if (depth <= 0 || hasTimedOut(context)) return scoreBoard(board, context.evaluation);
 
   const key = `c:${depth}:${getBoardKey(board)}`;
   if (context.cache.has(key)) return context.cache.get(key);
@@ -432,7 +474,7 @@ function expectimaxChance(board, depth, context) {
     return value;
   }
 
-  const cells = rankChanceCells(board, emptyCells, context.chanceCellLimit);
+  const cells = rankChanceCells(board, emptyCells, context.chanceCellLimit, context);
   const cellProbability = 1 / cells.length;
   let expectedValue = 0;
 
@@ -490,11 +532,26 @@ export function recommendMove(board, options = {}) {
     };
   }
 
-  const playableMoves = getPlayableMoves(normalizedBoard);
+  if (options.forbiddenTile && getMaxTile(normalizedBoard) >= options.forbiddenTile) {
+    return {
+      move: null,
+      reason: 'forbidden-tile',
+      candidates: [],
+      confidence: 0,
+      depth: 0,
+      nodes: 0,
+      elapsedMs: 0,
+    };
+  }
+
+  const rawPlayableMoves = getPlayableMoves(normalizedBoard);
+  const playableMoves = getPlayableMoves(normalizedBoard, {
+    forbiddenTile: options.forbiddenTile,
+  });
   if (playableMoves.length === 0) {
     return {
       move: null,
-      reason: 'game-over',
+      reason: rawPlayableMoves.length === 0 ? 'game-over' : 'no-safe-move',
       candidates: [],
       confidence: 0,
       depth: 0,
@@ -508,8 +565,14 @@ export function recommendMove(board, options = {}) {
     cache: new Map(),
     chanceCellLimit: options.chanceCellLimit ?? 7,
     deadlineMs: options.timeLimitMs ?? 0,
+    evaluation: {
+      forbiddenTile: options.forbiddenTile,
+      objective: options.objective,
+    },
+    forbiddenTile: options.forbiddenTile,
     nodes: 0,
-    scoreGainWeight: options.scoreGainWeight ?? 2.4,
+    scoreGainWeight: options.scoreGainWeight
+      ?? (options.objective === 'max-score-no-2048' ? 6.5 : 2.4),
     startedAt: now(),
   };
 

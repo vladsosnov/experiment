@@ -11,6 +11,9 @@ describe('TwentyFortyEightSolver', () => {
     expect(html).toContain('Board');
     expect(html).toContain('Suggestion');
     expect(html.match(/aria-label="Row [1-4] column [1-4]"/g)).toHaveLength(16);
+    expect(html).toContain('Max points');
+    expect(html).toContain('Classic');
+    expect(html).toContain('147,456');
     expect(html).toContain('Fast');
     expect(html).toContain('Strong');
     expect(html).toContain('Deep');

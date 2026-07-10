@@ -44,6 +44,7 @@
 }
 
 .solver-secondary-button,
+.solver-objective-group button,
 .solver-mode-group button,
 .solver-direction-actions button {
   border-radius: 8px;
@@ -148,6 +149,7 @@
   padding: 10px 12px;
 }
 
+.solver-objective-group,
 .solver-mode-group {
   background: #0f172a;
   border: 1px solid #334155;
@@ -159,6 +161,10 @@
   padding: 4px;
 }
 
+.solver-objective-group {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .solver-mode-group button {
   background: transparent;
   border: 1px solid transparent;
@@ -166,6 +172,14 @@
   padding: 8px 10px;
 }
 
+.solver-objective-group button {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  padding: 8px 10px;
+}
+
+.solver-objective-group button.active,
 .solver-mode-group button.active {
   background: #134e4a;
   border-color: #2dd4bf;
@@ -184,10 +198,19 @@
   padding: 18px;
 }
 
+.solver-recommendation.awaiting-spawn {
+  background: #fef3c7;
+  color: #111827;
+}
+
 .solver-recommendation-label {
   font-size: clamp(2rem, 8vw, 4rem);
   font-weight: 950;
   line-height: 1;
+}
+
+.solver-recommendation.awaiting-spawn .solver-recommendation-label {
+  font-size: clamp(1.35rem, 5vw, 2.35rem);
 }
 
 .solver-confidence {
@@ -223,27 +246,28 @@
   opacity: 0.35;
 }
 
-.solver-preview-grid {
-  background: #8f7d72;
-  border: 4px solid #8f7d72;
+.solver-score-cap {
+  align-items: center;
+  background: #0f172a;
+  border: 1px solid rgba(45, 212, 191, 0.35);
   border-radius: 8px;
-  display: grid;
-  gap: 4px;
-  grid-template-columns: repeat(4, 1fr);
-  max-width: 240px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 12px 14px;
 }
 
-.solver-preview-cell {
-  align-items: center;
-  aspect-ratio: 1;
-  border-radius: 5px;
-  color: #111827;
-  display: flex;
-  font-size: 0.9rem;
-  font-weight: 900;
-  justify-content: center;
-  min-width: 0;
-  overflow: hidden;
+.solver-score-cap strong {
+  color: #f8fafc;
+  font-size: 1.2rem;
+}
+
+.solver-score-cap span {
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-align: right;
+  text-transform: uppercase;
 }
 
 .solver-table-wrap {
