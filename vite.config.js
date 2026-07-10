@@ -5,4 +5,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: '/',
   plugins: [react()],
+  test: {
+    exclude: [
+      '**/dist/**',
+      '**/e2e/**',
+      '**/node_modules/**',
+      '**/playwright-report/**',
+      '**/test-results/**',
+    ],
+  },
 })

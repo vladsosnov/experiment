@@ -8,7 +8,12 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:2048": "playwright test e2e/2048-solver.spec.js",
+    "test:e2e:2048:confidence": "npm run test:2048:confidence",
+    "test:2048:confidence": "node scripts/evaluate2048Solver.mjs --seconds=300 --depth=3 --chance-cell-limit=3 --min-games=8 --min-average-max-tile=1024 --min-best-tile=2048",
+    "test:2048:confidence:smoke": "node scripts/evaluate2048Solver.mjs --games=5 --seconds=0 --depth=2 --chance-cell-limit=4 --min-games=5 --min-average-max-tile=512 --min-best-tile=1024"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
@@ -18,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.61.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
@@ -27,5 +33,6 @@
     "globals": "^17.4.0",
     "vite": "^8.0.1",
     "vitest": "^3.2.4"
-  }
+  },
+  "packageManager": "yarn@4.17.0+sha256.ea2af31ee4a6535e8559e3e1a6e34cb716112c9bed86edea71c3a5b36d472265"
 }

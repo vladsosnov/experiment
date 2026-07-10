@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 const PASSWORD = 'vladSosnov2026';
 
-export default function PasswordModal({ onUnlock }) {
+export default function PasswordModal({ onUnlock, onOpenSolver }) {
   const [value, setValue] = useState('');
   const [error, setError] = useState(false);
 
@@ -31,6 +31,11 @@ export default function PasswordModal({ onUnlock }) {
           {error && <p className="password-error">Incorrect password</p>}
           <button type="submit">Unlock</button>
         </form>
+        {onOpenSolver && (
+          <button type="button" className="password-secondary" onClick={onOpenSolver}>
+            2048 solver
+          </button>
+        )}
       </div>
     </div>
   );
