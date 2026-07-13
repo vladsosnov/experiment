@@ -4,20 +4,24 @@ const loadGoal = vi.fn();
 const loadDays = vi.fn();
 const loadReflections = vi.fn();
 const loadMentalChecks = vi.fn();
+const loadEvents = vi.fn();
 const saveGoal = vi.fn();
 const saveDays = vi.fn();
 const saveReflections = vi.fn();
 const saveMentalChecks = vi.fn();
+const saveEvents = vi.fn();
 
 vi.mock('./storage', () => ({
   loadGoal,
   loadDays,
   loadReflections,
   loadMentalChecks,
+  loadEvents,
   saveGoal,
   saveDays,
   saveReflections,
   saveMentalChecks,
+  saveEvents,
 }));
 
 describe('exportData', () => {
@@ -68,6 +72,9 @@ describe('exportData', () => {
     loadMentalChecks.mockResolvedValue([
       { id: 'm1', mood: 'good', comment: 'Calm and focused', createdAt: '2026-04-15T09:00:00.000Z' },
     ]);
+    loadEvents.mockResolvedValue([
+      { id: 'e1', text: 'Road trip', color: '#22c55e', startDate: '2026-04-10', endDate: '2026-04-12' },
+    ]);
 
     await exportData();
 
@@ -91,6 +98,9 @@ describe('exportData', () => {
     ]);
     expect(exported.mentalChecks).toEqual([
       { id: 'm1', mood: 'good', comment: 'Calm and focused', createdAt: '2026-04-15T09:00:00.000Z' },
+    ]);
+    expect(exported.events).toEqual([
+      { id: 'e1', text: 'Road trip', color: '#22c55e', startDate: '2026-04-10', endDate: '2026-04-12' },
     ]);
     expect(clickedLink.download).toMatch(/^marathon-prep-backup-\d{4}-\d{2}-\d{2}\.json$/);
     expect(clickedLink.click).toHaveBeenCalledTimes(1);
@@ -130,6 +140,9 @@ describe('importData', () => {
       mentalChecks: [
         { id: 'm1', mood: 'normal', comment: 'A little tired', createdAt: '2026-04-15T09:00:00.000Z' },
       ],
+      events: [
+        { id: 'e1', text: 'Road trip', color: '#22c55e', startDate: '2026-04-10', endDate: '2026-04-12' },
+      ],
     };
 
     globalThis.FileReader = class {
@@ -143,6 +156,7 @@ describe('importData', () => {
       days: payload.days,
       reflections: payload.reflections,
       mentalChecks: payload.mentalChecks,
+      events: payload.events,
     });
   });
 
@@ -159,7 +173,7 @@ describe('importData', () => {
       }
     };
 
-    await expect(importData(file)).resolves.toMatchObject({ mentalChecks: [] });
+    await expect(importData(file)).resolves.toMatchObject({ mentalChecks: [], events: [] });
   });
 
   it('persists every imported panel together', async () => {
@@ -168,6 +182,7 @@ describe('importData', () => {
       days: { '2026-04-15': { note: 'Imported note', todos: [] } },
       reflections: [{ id: 'r1', text: 'Imported reflection' }],
       mentalChecks: [{ id: 'm1', mood: 'good', comment: 'Imported check' }],
+      events: [{ id: 'e1', text: 'Imported event' }],
     };
 
     await persistImportedData(imported);
@@ -176,5 +191,6 @@ describe('importData', () => {
     expect(saveDays).toHaveBeenCalledWith(imported.days);
     expect(saveReflections).toHaveBeenCalledWith(imported.reflections);
     expect(saveMentalChecks).toHaveBeenCalledWith(imported.mentalChecks);
+    expect(saveEvents).toHaveBeenCalledWith(imported.events);
   });
 });

@@ -1,11 +1,5 @@
 import { STATUS_COLORS } from '../components/statusColors';
-import { isHoliday, HOLIDAY_COUNTRY, OBSERVED_HOLIDAY_DATES, HOLIDAY_DATES } from './dates';
-
-export const DAY_FOR_ME_DATES = [
-  '2026-02-16',
-  '2026-09-25',
-  '2026-12-28',
-];
+import { isHoliday, HOLIDAY_COUNTRY, OBSERVED_HOLIDAY_DATES, HOLIDAY_DATES, dateRange } from './dates';
 
 export const PERSONAL_VACATION_DATES = [
   '2026-06-04',
@@ -18,11 +12,6 @@ const FLAG_BACKGROUNDS = {
 };
 
 const SPECIAL_DAY_COLORS = {
-  dayForMe: {
-    bg: '#c6a2f6',
-    key: 'dayForMe',
-    label: 'Day for me',
-  },
   vacation: {
     bg: '#ED80E9',
     key: 'vacation',
@@ -47,7 +36,6 @@ function getHolidayCountry(dateStr) {
 }
 
 export function getDateSpecialDay(dateStr) {
-  if (DAY_FOR_ME_DATES.includes(dateStr)) return SPECIAL_DAY_COLORS.dayForMe;
   if (PERSONAL_VACATION_DATES.includes(dateStr)) return SPECIAL_DAY_COLORS.personalVacation;
   if (isHoliday(dateStr)) {
     const country = getHolidayCountry(dateStr);
@@ -66,28 +54,43 @@ export function getPrioritySpecialDay(dateStr, workedWeekend) {
   return getDateSpecialDay(dateStr);
 }
 
-export function getDaySquareAppearance({ data, dateStr, dayNumber, isFuture, isToday }) {
+/**
+ * List built-in special days (holidays, personal vacation) within a date range.
+ */
+export function listSpecialDaysInRange(startDate, endDate) {
+  return dateRange(startDate, endDate)
+    .map((date) => {
+      const specialDay = getDateSpecialDay(date);
+      return specialDay ? { date, label: specialDay.label, bg: specialDay.bg } : null;
+    })
+    .filter(Boolean);
+}
+
+export function getDaySquareAppearance({ data, dateStr, dayNumber, isFuture, isToday, event }) {
   const status = data?.status ?? null;
   const workedWeekend = data?.workedWeekend ?? false;
   const specialDay = status && !workedWeekend ? null : getPrioritySpecialDay(dateStr, workedWeekend);
-  const isSplit = Boolean(specialDay && status);
+  // A custom event outranks built-in special days as the cell's highlight.
+  const highlight = event ? { bg: event.color, label: event.text } : specialDay;
+  const isSplit = Boolean(highlight && status);
   const bg = isSplit
     ? 'transparent'
-    : (specialDay
-      ? specialDay.bg
+    : (highlight
+      ? highlight.bg
       : (status
         ? STATUS_COLORS[status].bg
         : (isFuture ? '#1e293b' : '#334155')));
-  const label = specialDay
-    ? (status ? `${specialDay.label} + ${STATUS_COLORS[status].label}` : specialDay.label)
+  const label = highlight
+    ? (status ? `${highlight.label} + ${STATUS_COLORS[status].label}` : highlight.label)
     : (status ? STATUS_COLORS[status].label : (isToday ? 'Today' : `Day ${dayNumber}`));
 
   return {
     bg,
     isSplit,
     label,
-    splitLeftBg: isSplit ? specialDay.bg : null,
+    splitLeftBg: isSplit ? highlight.bg : null,
     splitRightBg: isSplit ? STATUS_COLORS[status].bg : null,
-    textColor: specialDay?.textColor || null,
+    textColor: event ? null : (specialDay?.textColor || null),
+    eventText: event ? event.text : null,
   };
 }

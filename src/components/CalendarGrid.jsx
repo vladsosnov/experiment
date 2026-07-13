@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
 import DaySquare from './DaySquare';
 import { dateRange, todayString, fromDateString } from '../utils/dates';
+import { getEventForDate } from '../utils/events';
 
 const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const EMPTY_EVENTS = [];
 
-export default function CalendarGrid({ goal, days, onDayClick }) {
+export default function CalendarGrid({ goal, days, events = EMPTY_EVENTS, onDayClick }) {
   const today = todayString();
 
   const { dates, paddingBefore } = useMemo(() => {
@@ -34,6 +36,7 @@ export default function CalendarGrid({ goal, days, onDayClick }) {
             dateStr={dateStr}
             dayNumber={idx + 1}
             data={days[dateStr] ?? null}
+            event={getEventForDate(events, dateStr)}
             isToday={dateStr === today}
             isFuture={dateStr > today}
             isLastDay={idx === dates.length - 1}

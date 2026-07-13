@@ -4,7 +4,7 @@ function createCompletedGoalId() {
 }
 
 export function createCompletedGoal(
-  { goal, days, reflections, mentalChecks },
+  { goal, days, reflections, mentalChecks, events },
   completedAt = new Date().toISOString(),
   makeId = createCompletedGoalId,
 ) {
@@ -17,6 +17,7 @@ export function createCompletedGoal(
     days,
     reflections,
     mentalChecks,
+    events,
   };
 }
 

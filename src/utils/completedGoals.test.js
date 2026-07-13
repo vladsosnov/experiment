@@ -17,6 +17,7 @@ describe('createCompletedGoal', () => {
         days: { '2026-07-10': { status: 'green', note: 'Finished.' } },
         reflections: [{ id: 'r1', text: 'I stayed consistent.' }],
         mentalChecks: [{ id: 'm1', date: '2026-07-10', mood: 'great', comment: 'Proud.' }],
+        events: [{ id: 'e1', text: 'Launch week' }],
       },
       '2026-07-10T18:00:00.000Z',
       () => 'completed-experiment',
@@ -31,6 +32,7 @@ describe('createCompletedGoal', () => {
       days: { '2026-07-10': { status: 'green', note: 'Finished.' } },
       reflections: [{ id: 'r1', text: 'I stayed consistent.' }],
       mentalChecks: [{ id: 'm1', date: '2026-07-10', mood: 'great', comment: 'Proud.' }],
+      events: [{ id: 'e1', text: 'Launch week' }],
     });
   });
 

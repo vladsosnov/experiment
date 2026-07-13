@@ -14,6 +14,7 @@ const GOAL_DOC = 'goal';
 const DAYS_DOC = 'days';
 const REFLECTIONS_DOC = 'reflections';
 const MENTAL_CHECKS_DOC = 'mentalChecks';
+const EVENTS_DOC = 'events';
 const COMPLETED_GOALS_COLLECTION = 'completedGoals';
 
 export async function loadGoal() {
@@ -75,6 +76,22 @@ export async function saveMentalChecks(checks) {
   await setDoc(doc(db, DATA_COLLECTION, MENTAL_CHECKS_DOC), { value: clean });
 }
 
+export async function loadEvents() {
+  try {
+    const snap = await getDoc(doc(db, DATA_COLLECTION, EVENTS_DOC));
+    if (!snap.exists()) return [];
+    const value = snap.data().value;
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveEvents(events) {
+  const clean = JSON.parse(JSON.stringify(Array.isArray(events) ? events : []));
+  await setDoc(doc(db, DATA_COLLECTION, EVENTS_DOC), { value: clean });
+}
+
 export async function loadCompletedGoals() {
   try {
     const snap = await getDocs(collection(db, COMPLETED_GOALS_COLLECTION));
@@ -96,8 +113,8 @@ export async function archiveCompletedGoal(completedGoal) {
   );
   batch.set(doc(db, DATA_COLLECTION, GOAL_DOC), { value: null });
   batch.set(doc(db, DATA_COLLECTION, DAYS_DOC), { value: {} });
-  batch.set(doc(db, DATA_COLLECTION, REFLECTIONS_DOC), { value: [] });
   batch.set(doc(db, DATA_COLLECTION, MENTAL_CHECKS_DOC), { value: [] });
+  batch.set(doc(db, DATA_COLLECTION, EVENTS_DOC), { value: [] });
 
   await batch.commit();
 }
@@ -110,7 +127,7 @@ export async function clearActiveGoal() {
   await Promise.all([
     deleteDoc(doc(db, DATA_COLLECTION, GOAL_DOC)),
     deleteDoc(doc(db, DATA_COLLECTION, DAYS_DOC)),
-    deleteDoc(doc(db, DATA_COLLECTION, REFLECTIONS_DOC)),
     deleteDoc(doc(db, DATA_COLLECTION, MENTAL_CHECKS_DOC)),
+    deleteDoc(doc(db, DATA_COLLECTION, EVENTS_DOC)),
   ]);
 }

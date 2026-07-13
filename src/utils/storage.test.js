@@ -100,13 +100,14 @@ describe('reflection and mental check storage', () => {
     );
   });
 
-  it('clears reflections with the rest of the app data', async () => {
+  it('clears goal-scoped data but leaves reflections untouched', async () => {
     await clearActiveGoal();
 
     expect(deleteDoc).toHaveBeenCalledWith({ db: 'mock-db', collection: 'data', id: 'goal' });
     expect(deleteDoc).toHaveBeenCalledWith({ db: 'mock-db', collection: 'data', id: 'days' });
-    expect(deleteDoc).toHaveBeenCalledWith({ db: 'mock-db', collection: 'data', id: 'reflections' });
     expect(deleteDoc).toHaveBeenCalledWith({ db: 'mock-db', collection: 'data', id: 'mentalChecks' });
+    expect(deleteDoc).toHaveBeenCalledWith({ db: 'mock-db', collection: 'data', id: 'events' });
+    expect(deleteDoc).not.toHaveBeenCalledWith({ db: 'mock-db', collection: 'data', id: 'reflections' });
   });
 
   it('atomically archives a completed goal and clears the active goal', async () => {
@@ -133,11 +134,15 @@ describe('reflection and mental check storage', () => {
       { value: {} },
     );
     expect(batch.set).toHaveBeenCalledWith(
-      { db: 'mock-db', collection: 'data', id: 'reflections' },
+      { db: 'mock-db', collection: 'data', id: 'mentalChecks' },
       { value: [] },
     );
     expect(batch.set).toHaveBeenCalledWith(
-      { db: 'mock-db', collection: 'data', id: 'mentalChecks' },
+      { db: 'mock-db', collection: 'data', id: 'events' },
+      { value: [] },
+    );
+    expect(batch.set).not.toHaveBeenCalledWith(
+      { db: 'mock-db', collection: 'data', id: 'reflections' },
       { value: [] },
     );
     expect(batch.commit).toHaveBeenCalledTimes(1);

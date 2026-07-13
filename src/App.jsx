@@ -9,6 +9,7 @@ import QuoteToast from './components/QuoteToast';
 import GoalEditModal from './components/GoalEditModal';
 import NotesTable from './components/NotesTable';
 import SelfReflections from './components/SelfReflections';
+import EventsPanel from './components/EventsPanel';
 import MentalCheck from './components/MentalCheck';
 import { ensureDailyMentalChecks, mentalCheckStartDate } from './components/mentalChecksModel';
 import CompletedGoals from './components/CompletedGoals';
@@ -24,6 +25,8 @@ import {
   saveReflections,
   loadMentalChecks,
   saveMentalChecks,
+  loadEvents,
+  saveEvents,
   loadCompletedGoals,
   archiveCompletedGoal,
   deleteCompletedGoal,
@@ -44,6 +47,7 @@ export default function App() {
   const [days, setDays] = useState({});
   const [reflections, setReflections] = useState([]);
   const [mentalChecks, setMentalChecks] = useState([]);
+  const [events, setEvents] = useState([]);
   const [completedGoals, setCompletedGoals] = useState([]);
   const [celebrationGoal, setCelebrationGoal] = useState(null);
   const [page, setPage] = useState('tracker');
@@ -63,14 +67,16 @@ export default function App() {
       loadDays(),
       loadReflections(),
       loadMentalChecks(),
+      loadEvents(),
       loadCompletedGoals(),
-    ]).then(([g, d, r, m, completed]) => {
+    ]).then(([g, d, r, m, ev, completed]) => {
       const normalizedDays = applySeededPlanningTodo(g, d);
       const normalizedMentalChecks = g ? ensureDailyMentalChecks(m, mentalCheckStartDate(g)) : m;
       setGoal(g);
       setDays(normalizedDays);
       setReflections(r);
       setMentalChecks(normalizedMentalChecks);
+      setEvents(ev);
       setCompletedGoals(completed);
       if (g && normalizedDays !== d) {
         saveDays(normalizedDays);
@@ -122,13 +128,13 @@ export default function App() {
     await Promise.all([
       saveGoal(newGoal),
       saveDays(seededDays),
-      saveReflections([]),
       saveMentalChecks(dailyMentalChecks),
+      saveEvents([]),
     ]);
     setGoal(newGoal);
     setDays(seededDays);
-    setReflections([]);
     setMentalChecks(dailyMentalChecks);
+    setEvents([]);
   }
 
   const handleDayClick = useCallback((dateStr) => {
@@ -154,6 +160,7 @@ export default function App() {
         days: normalizedDays,
         reflections,
         mentalChecks,
+        events,
       });
 
       try {
@@ -162,8 +169,8 @@ export default function App() {
         setCelebrationGoal(completedGoal);
         setGoal(null);
         setDays({});
-        setReflections([]);
         setMentalChecks([]);
+        setEvents([]);
         setModalDate(null);
         setToast(null);
         setPage('tracker');
@@ -195,6 +202,11 @@ export default function App() {
     setMentalChecks(nextChecks);
   }
 
+  async function handleEventsChange(nextEvents) {
+    await saveEvents(nextEvents);
+    setEvents(nextEvents);
+  }
+
   async function handleExport() {
     setGoalMenuOpen(false);
     await exportData();
@@ -210,7 +222,7 @@ export default function App() {
     const file = e.target.files?.[0];
     if (!file) return;
     importData(file)
-      .then(async ({ goal: g, days: d, reflections: r, mentalChecks: m }) => {
+      .then(async ({ goal: g, days: d, reflections: r, mentalChecks: m, events: ev }) => {
         const normalizedDays = applySeededPlanningTodo(g, d);
         const normalizedMentalChecks = ensureDailyMentalChecks(m, mentalCheckStartDate(g));
         await persistImportedData({
@@ -218,11 +230,13 @@ export default function App() {
           days: normalizedDays,
           reflections: r,
           mentalChecks: normalizedMentalChecks,
+          events: ev,
         });
         setGoal(g);
         setDays(normalizedDays);
         setReflections(r);
         setMentalChecks(normalizedMentalChecks);
+        setEvents(ev);
       })
       .catch((error) => setImportError(
         typeof error === 'string'
@@ -238,8 +252,8 @@ export default function App() {
     await clearActiveGoal();
     setGoal(null);
     setDays({});
-    setReflections([]);
     setMentalChecks([]);
+    setEvents([]);
   }
 
   async function handleDeleteCompletedGoal(completedGoalId) {
@@ -375,7 +389,8 @@ export default function App() {
       <main className="app-main">
         {hasCompletedGoal(goal, days) && <Congrats goal={goal} days={days} />}
         <ProgressBar goal={goal} days={days} />
-        <CalendarGrid goal={goal} days={days} onDayClick={handleDayClick} />
+        <CalendarGrid goal={goal} days={days} events={events} onDayClick={handleDayClick} />
+        <EventsPanel goal={goal} events={events} onChange={handleEventsChange} />
         <TodoInsights goal={goal} days={days} />
         <NotesTable goal={goal} days={days} />
         <SelfReflections reflections={reflections} onChange={handleReflectionsChange} />

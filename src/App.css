@@ -810,6 +810,7 @@
   position: relative;
   overflow: visible;
   color: rgba(248, 250, 252, 0.9);
+  word-break: break-word;
 }
 .day-square:hover:not(.empty) {
   transform: scale(1.15);
@@ -2077,6 +2078,133 @@
   color: #FA5053;
   font-size: 0.82rem;
   margin: -4px 0 0;
+}
+
+/* ── Events & special days ────────────────────────────────────── */
+.events-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  overflow: hidden;
+}
+
+.events-header {
+  align-items: center;
+  flex-shrink: 0;
+  gap: 16px;
+  border-bottom: 1px solid #334155;
+}
+
+.events-section .notes-pagination {
+  flex-shrink: 0;
+}
+
+.events-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.events-empty {
+  color: #475569;
+  font-size: 0.85rem;
+  padding: 24px;
+  text-align: center;
+}
+
+.events-list-item {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  padding: 10px 24px;
+}
+
+.events-list-item:not(:last-child) {
+  border-bottom: 1px solid #1e293b;
+}
+
+.events-list-item-readonly {
+  opacity: 0.75;
+}
+
+.event-swatch {
+  border-radius: 4px;
+  flex-shrink: 0;
+  height: 16px;
+  width: 16px;
+}
+
+.event-item-text {
+  color: #e2e8f0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-item-range {
+  color: #64748b;
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.event-item-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.event-color-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.event-color-input {
+  background: transparent;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  cursor: pointer;
+  height: 32px;
+  padding: 2px;
+  width: 40px;
+}
+
+.event-color-preset {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  height: 24px;
+  width: 24px;
+}
+
+.event-color-preset.active {
+  border-color: #f8fafc;
+}
+
+.day-event-text {
+  align-items: center;
+  display: flex;
+  font-size: 0.58rem;
+  font-weight: 600;
+  height: 100%;
+  justify-content: center;
+  overflow: hidden;
+  padding: 4px;
+  pointer-events: none;
+  text-align: center;
+  user-select: none;
+  width: 100%;
 }
 
 /* ── Mental Check ─────────────────────────────────────────────── */

@@ -1,7 +1,7 @@
 import { getDaySquareAppearance } from '../utils/dayAppearance';
 import { countIncompleteTodos } from '../utils/todos';
 
-export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture, isLastDay, onClick }) {
+export default function DaySquare({ dateStr, dayNumber, data, event, isToday, isFuture, isLastDay, onClick }) {
   // Extract day/month from dateStr (YYYY-MM-DD)
   const parts = dateStr.split('-');
   const dayOfMonth = parseInt(parts[2], 10);
@@ -10,14 +10,15 @@ export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture,
   const note = data?.note;
   const incompleteTodoCount = countIncompleteTodos(data?.todos);
   const hasIncompleteTodos = incompleteTodoCount > 0;
-  const { bg, isSplit, label, splitLeftBg, splitRightBg, textColor } = getDaySquareAppearance({
+  const { bg, isSplit, label, splitLeftBg, splitRightBg, textColor, eventText } = getDaySquareAppearance({
     data,
     dateStr,
     dayNumber,
     isFuture,
     isToday,
+    event,
   });
-  const opacity = isFuture ? 0.35 : 1;
+  const opacity = isFuture ? (event ? 0.6 : 0.35) : 1;
 
   let borderStyle = { background: bg, border: '1px solid #f8fafc', ...(textColor ? { color: textColor } : {}) };
 
@@ -47,8 +48,14 @@ export default function DaySquare({ dateStr, dayNumber, data, isToday, isFuture,
         </>
       )}
       {hasIncompleteTodos && <span className="todo-indicator">{incompleteTodoCount}</span>}
-      <span className="day-date">{monthName} {dayOfMonth}</span>
-      <span className="day-number">{dayNumber}</span>
+      {eventText ? (
+        <span className="day-event-text">{eventText}</span>
+      ) : (
+        <>
+          <span className="day-date">{monthName} {dayOfMonth}</span>
+          <span className="day-number">{dayNumber}</span>
+        </>
+      )}
     </div>
   );
 }
