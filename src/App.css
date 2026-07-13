@@ -1,5 +1,5 @@
-/* ── Password gate ──────────────────────────────────────────────── */
-.password-overlay {
+/* ── Access gate ────────────────────────────────────────────────── */
+.access-gate-overlay {
   position: fixed;
   inset: 0;
   background: var(--bg);
@@ -9,7 +9,7 @@
   z-index: 1000;
 }
 
-.password-modal {
+.access-gate-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -22,30 +22,46 @@
   max-width: 340px;
 }
 
-.password-modal h2 {
+.access-gate-card h2 {
   margin: 0;
   font-size: 1.4rem;
 }
 
-.password-modal form {
+.access-gate-controls {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
 }
 
-.password-modal input {
+.access-code-entry {
   width: 100%;
   padding: 10px 14px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--bg);
+  caret-color: var(--text);
   color: var(--text);
   font-size: 1rem;
+  line-height: 1.25;
   box-sizing: border-box;
+  min-height: 42px;
+  outline: 2px solid transparent;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.password-modal button[type="submit"] {
+.access-code-entry:empty::before {
+  color: var(--text-muted);
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.access-code-entry:focus {
+  outline-color: var(--accent);
+}
+
+.access-gate-controls button {
   padding: 10px;
   border-radius: 8px;
   border: none;
@@ -56,7 +72,7 @@
   cursor: pointer;
 }
 
-.password-secondary {
+.access-gate-secondary {
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -65,12 +81,12 @@
   padding: 9px 14px;
 }
 
-.password-secondary:hover {
+.access-gate-secondary:hover {
   background: var(--bg);
   color: var(--text);
 }
 
-.password-error {
+.access-gate-error {
   margin: 0;
   color: var(--danger, #e74c3c);
   font-size: 0.85rem;

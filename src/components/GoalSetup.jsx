@@ -5,7 +5,6 @@ export default function GoalSetup({
   onSave,
   onImportFile,
   onShowCompletedGoals,
-  onOpenSolver,
   completedGoalsCount = 0,
   importError = '',
   onDismissImportError,
@@ -140,15 +139,6 @@ export default function GoalSetup({
           >
             Completed goals ({completedGoalsCount})
           </button>
-          {onOpenSolver && (
-            <button
-              type="button"
-              className="goal-setup-secondary-btn"
-              onClick={onOpenSolver}
-            >
-              2048 solver
-            </button>
-          )}
           <input
             ref={importRef}
             type="file"

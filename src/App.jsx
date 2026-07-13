@@ -15,7 +15,6 @@ import CompletedGoals from './components/CompletedGoals';
 import CompletionCelebration from './components/CompletionCelebration';
 import TodoInsights from './components/TodoInsights';
 import PasswordModal from './components/PasswordModal';
-import TwentyFortyEightSolver from './components/TwentyFortyEightSolver';
 import {
   loadGoal,
   saveGoal,
@@ -47,7 +46,7 @@ export default function App() {
   const [mentalChecks, setMentalChecks] = useState([]);
   const [completedGoals, setCompletedGoals] = useState([]);
   const [celebrationGoal, setCelebrationGoal] = useState(null);
-  const [page, setPage] = useState(() => (window.location.hash === '#2048' ? 'solver' : 'tracker'));
+  const [page, setPage] = useState('tracker');
   const [loading, setLoading] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
   const [modalDate, setModalDate] = useState(null);
   const [toast, setToast] = useState(null);
@@ -113,17 +112,7 @@ export default function App() {
     setUnlocked(true);
   }
 
-  function handleOpenSolver() {
-    window.history.replaceState(null, '', '#2048');
-    setGoalMenuOpen(false);
-    setToast(null);
-    setPage('solver');
-  }
-
   function handleBackToTracker() {
-    if (window.location.hash === '#2048') {
-      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
-    }
     setPage('tracker');
   }
 
@@ -266,12 +255,8 @@ export default function App() {
     setPage('completed');
   }
 
-  if (page === 'solver') {
-    return <TwentyFortyEightSolver onBack={handleBackToTracker} />;
-  }
-
   if (!unlocked) {
-    return <PasswordModal onUnlock={handleUnlock} onOpenSolver={handleOpenSolver} />;
+    return <PasswordModal onUnlock={handleUnlock} />;
   }
 
   if (loading) {
@@ -307,7 +292,6 @@ export default function App() {
         onSave={handleGoalSave}
         onImportFile={handleImportFile}
         onShowCompletedGoals={handleShowCompletedGoals}
-        onOpenSolver={handleOpenSolver}
         completedGoalsCount={completedGoals.length}
         importError={importError}
         onDismissImportError={() => setImportError('')}
@@ -357,13 +341,6 @@ export default function App() {
                 onClick={handleShowCompletedGoals}
               >
                 Completed goals
-              </button>
-              <button
-                type="button"
-                className="goal-menu-item"
-                onClick={handleOpenSolver}
-              >
-                2048 solver
               </button>
               <button type="button" className="goal-menu-item danger" onClick={handleReset}>
                 Reset active goal
