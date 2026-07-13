@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { STATUS_COLORS } from './statusColors';
 import { isWeekend } from '../utils/dates';
 import {
@@ -15,7 +15,7 @@ import {
 const STATUSES = ['green', 'blue', 'yellow', 'red'];
 const KEY_MAP = { '1': 'green', '2': 'blue', '3': 'yellow', '4': 'red' };
 
-export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) {
+export default function DayModal({ dateStr, dayNumber, data, event, onSave, onClose }) {
   const [status, setStatus] = useState(data?.status ?? null);
   const [note, setNote] = useState(data?.note ?? '');
   const [todos, setTodos] = useState(() => groupTodosByCompletion(data?.todos ?? []));
@@ -44,7 +44,7 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
 
   function handleSave() {
     const hasStatus = status !== null;
-    if (hasStatus && !note.trim()) return;
+    if (hasStatus && !note.trim() && !event) return;
     onSave(dateStr, {
       status,
       note: note.trim(),
@@ -213,7 +213,7 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
             className="note-input"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="How was this day? (required)"
+            placeholder={event ? 'How was this day? (optional)' : 'How was this day? (required)'}
             rows={3}
             maxLength={300}
           />
@@ -406,7 +406,7 @@ export default function DayModal({ dateStr, dayNumber, data, onSave, onClose }) 
             type="button"
             className="btn-primary"
             onClick={handleSave}
-            disabled={status && !note.trim()}
+            disabled={status && !note.trim() && !event}
           >
             Save
           </button>

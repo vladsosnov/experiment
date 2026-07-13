@@ -6,6 +6,7 @@ import {
   countTodoItems,
   deleteSubtaskFromTodo,
   groupTodosByCompletion,
+  isTodosFullyComplete,
   reorderTodos,
   toggleSubtaskCompletion,
   toggleTodoCompletion,
@@ -85,6 +86,34 @@ describe('countIncompleteTodos', () => {
         completed: false,
       },
     ])).toBe(2);
+  });
+});
+
+describe('isTodosFullyComplete', () => {
+  it('returns false for an empty or missing todo list', () => {
+    expect(isTodosFullyComplete()).toBe(false);
+    expect(isTodosFullyComplete([])).toBe(false);
+  });
+
+  it('returns false when any todo is incomplete', () => {
+    expect(isTodosFullyComplete([
+      { id: 1, text: 'First', completed: true },
+      { id: 2, text: 'Second', completed: false },
+    ])).toBe(false);
+  });
+
+  it('returns true when every todo (and subtask) is completed', () => {
+    expect(isTodosFullyComplete([
+      { id: 1, text: 'First', completed: true },
+      {
+        id: 2,
+        text: 'Second',
+        completed: true,
+        subtasks: [
+          { id: 21, text: 'Sub', completed: true },
+        ],
+      },
+    ])).toBe(true);
   });
 });
 

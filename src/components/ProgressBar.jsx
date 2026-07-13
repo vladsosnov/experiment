@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { STATUS_COLORS } from './statusColors';
 import { dateRange, todayString } from '../utils/dates';
 import { formatProgressPct } from '../utils/progress';
+import { isDayFilled } from '../utils/congrats';
 
 export default function ProgressBar({ goal, days }) {
   const total = goal.totalDays;
@@ -16,8 +17,7 @@ export default function ProgressBar({ goal, days }) {
   Object.values(days).forEach(({ status }) => {
     if (status && counts[status] !== undefined) counts[status]++;
   });
-  // Only count days with status as "filled"
-  const filled = Object.values(days).filter(d => d.status).length;
+  const filled = Object.values(days).filter(isDayFilled).length;
   const pct = formatProgressPct(filled, total);
 
   return (
@@ -30,17 +30,22 @@ export default function ProgressBar({ goal, days }) {
       {/* Sequential timeline — one rect per day */}
       <div className="progress-timeline" style={{ '--tl-cols': total }}>
         {dates.map((dateStr, i) => {
-          const status = days[dateStr]?.status;
+          const day = days[dateStr];
+          const status = day?.status;
           const isFuture = dateStr > today;
           const isToday = dateStr === today;
-          const note = days[dateStr]?.note;
+          const note = day?.note;
+          const todosComplete = !status && isDayFilled(day);
 
           let bg;
           if (status) bg = STATUS_COLORS[status].bg;
+          else if (todosComplete) bg = '#64748c';
           else if (isFuture) bg = '#fff';
           else bg = '#334155';
 
-          const label = status ? STATUS_COLORS[status].label : (isFuture ? 'Future' : 'Not logged');
+          const label = status
+            ? STATUS_COLORS[status].label
+            : (todosComplete ? 'All todos done' : (isFuture ? 'Future' : 'Not logged'));
           const tooltip = [`Day ${i + 1} — ${dateStr}`, label, note ? `"${note}"` : null]
             .filter(Boolean).join('\n');
 

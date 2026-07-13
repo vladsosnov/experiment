@@ -1,5 +1,11 @@
+import { isTodosFullyComplete } from './todos';
+
+export function isDayFilled(day) {
+  return Boolean(day?.status) || isTodosFullyComplete(day?.todos);
+}
+
 export function hasCompletedGoal(goal, days) {
-  return Boolean(goal && days[goal.endDate]?.status);
+  return Boolean(goal && isDayFilled(days[goal.endDate]));
 }
 
 export function getCongratsStats(days, totalDays) {
@@ -9,7 +15,7 @@ export function getCongratsStats(days, totalDays) {
     if (status && counts[status] !== undefined) counts[status]++;
   });
 
-  const loggedDays = Object.values(days).filter(({ status }) => Boolean(status)).length;
+  const loggedDays = Object.values(days).filter(isDayFilled).length;
   const superDays = counts.green;
   const strongPct = totalDays > 0 ? Math.round(((counts.green + counts.blue) / totalDays) * 100) : 0;
 

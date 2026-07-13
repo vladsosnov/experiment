@@ -16,6 +16,10 @@ export function countIncompleteTodos(todos = []) {
   return countTodoItems(todos) - countCompletedTodoItems(todos);
 }
 
+export function isTodosFullyComplete(todos = []) {
+  return todos.length > 0 && countIncompleteTodos(todos) === 0;
+}
+
 export function countTodoItems(todos = []) {
   return todos.reduce((count, todo) => {
     const subtasks = getSubtasks(todo);

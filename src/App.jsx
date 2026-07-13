@@ -37,6 +37,7 @@ import { getQuote } from './utils/quotes';
 import { exportData, importData, persistImportedData } from './utils/backup';
 import { applySeededPlanningTodo, normalizeSavedDay } from './utils/seededTodos';
 import { createCompletedGoal } from './utils/completedGoals';
+import { getEventForDate } from './utils/events';
 import './App.css';
 
 const SESSION_KEY = 'goaltracker_unlocked';
@@ -420,6 +421,7 @@ export default function App() {
           dateStr={modalDate}
           dayNumber={modalDayNumber}
           data={days[modalDate] ?? null}
+          event={getEventForDate(events, modalDate)}
           onSave={handleDaySave}
           onClose={() => setModalDate(null)}
         />
