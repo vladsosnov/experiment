@@ -6,7 +6,8 @@ const PAGE_SIZE = 5;
 const PRESET_COLORS = [
   { label: 'Vacation', color: '#2193c4' },
   { label: 'Day for me', color: '#f97316' },
-  { label: 'Birthday', color: '#cb47e6' },
+  { label: 'Birthday', color: '#8a2ff1' },
+  { label: 'Holiday', color: '#ED80E9' },
 ];
 
 function createEventId() {

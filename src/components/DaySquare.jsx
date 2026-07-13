@@ -18,7 +18,7 @@ export default function DaySquare({ dateStr, dayNumber, data, event, isToday, is
     isToday,
     event,
   });
-  const opacity = isFuture ? (event ? 0.6 : 0.35) : 1;
+  const opacity = isFuture ? (event ? 0.75 : 0.4) : 1;
 
   let borderStyle = { background: bg, border: '1px solid #f8fafc', ...(textColor ? { color: textColor } : {}) };
 
