@@ -51,10 +51,8 @@
   white-space: nowrap;
 }
 
-.access-code-entry:empty::before {
+.access-code-entry::placeholder {
   color: var(--text-muted);
-  content: attr(data-placeholder);
-  pointer-events: none;
 }
 
 .access-code-entry:focus {

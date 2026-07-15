@@ -8,6 +8,9 @@ export const READING_TODO_TEXT = 'Reading 10 mins';
 export const READING_TODO_START_DATE = '2026-06-06';
 export const FINANCIAL_CHECKIN_TODO_TEXT = 'Financial checkin';
 export const FINANCIAL_CHECKIN_TODO_START_DATE = '2026-06-06';
+export const CREATIVE_WORK_TODO_TEXT = 'Submit creative work';
+export const CREATIVE_WORK_TODO_START_DATE = '2026-07-13';
+export const CREATIVE_WORK_TODO_DAY_OF_MONTH = 24;
 
 const SEEDED_TODOS = [
   {
@@ -35,6 +38,13 @@ const SEEDED_TODOS = [
     dismissKey: 'dismissSeededFinancialCheckinTodo',
     dayOfWeek: 0,
   },
+  {
+    text: CREATIVE_WORK_TODO_TEXT,
+    startDate: CREATIVE_WORK_TODO_START_DATE,
+    idPrefix: 'seed-creative-work',
+    dismissKey: 'dismissSeededCreativeWorkTodo',
+    dayOfMonth: CREATIVE_WORK_TODO_DAY_OF_MONTH,
+  },
 ];
 
 function createSeededTodo(seed, dateStr) {
@@ -47,8 +57,9 @@ function createSeededTodo(seed, dateStr) {
 
 function isQualifyingSeededTodoDate(seed, dateStr) {
   if (dateStr < seed.startDate) return false;
-  if (typeof seed.dayOfWeek !== 'number') return true;
-  return fromDateString(dateStr).getDay() === seed.dayOfWeek;
+  if (typeof seed.dayOfWeek === 'number') return fromDateString(dateStr).getDay() === seed.dayOfWeek;
+  if (typeof seed.dayOfMonth === 'number') return fromDateString(dateStr).getDate() === seed.dayOfMonth;
+  return true;
 }
 
 function shouldDismissSeededTodo(seed, dateStr, day) {

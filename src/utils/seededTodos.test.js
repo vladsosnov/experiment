@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CREATIVE_WORK_TODO_TEXT,
   FINANCIAL_CHECKIN_TODO_TEXT,
   LEETCODE_TODO_TEXT,
   normalizeSavedDay,
@@ -105,6 +106,20 @@ describe('applySeededPlanningTodo', () => {
     expect(next['2026-06-08'].todos.some((todo) => todo.text === FINANCIAL_CHECKIN_TODO_TEXT)).toBe(false);
     expect(next['2026-06-14'].todos.some((todo) => todo.text === FINANCIAL_CHECKIN_TODO_TEXT)).toBe(true);
     expect(next['2026-06-15'].todos.some((todo) => todo.text === FINANCIAL_CHECKIN_TODO_TEXT)).toBe(false);
+  });
+
+  it('adds the creative work todo only on the 24th of each month from July 13 2026 onward', () => {
+    const goal = {
+      startDate: '2026-07-13',
+      endDate: '2026-08-25',
+    };
+
+    const next = applySeededPlanningTodo(goal, {});
+
+    expect(next['2026-07-13'].todos.some((todo) => todo.text === CREATIVE_WORK_TODO_TEXT)).toBe(false);
+    expect(next['2026-07-24'].todos.some((todo) => todo.text === CREATIVE_WORK_TODO_TEXT)).toBe(true);
+    expect(next['2026-07-25'].todos.some((todo) => todo.text === CREATIVE_WORK_TODO_TEXT)).toBe(false);
+    expect(next['2026-08-24'].todos.some((todo) => todo.text === CREATIVE_WORK_TODO_TEXT)).toBe(true);
   });
 
   it('does not duplicate the LeetCode todo when it already exists', () => {
