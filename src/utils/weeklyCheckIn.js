@@ -4,15 +4,23 @@ import { STATUS_COLORS } from '../components/statusColors';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+function humanizeText(text) {
+  return text.replace(/leetcode/gi, 'algorithm');
+}
+
 function describeDay(dateStr, data) {
   if (!data) return 'No entry logged.';
 
   const parts = [];
   if (data.status) parts.push(STATUS_COLORS[data.status].label);
-  if (data.note?.trim()) parts.push(`Note: "${data.note.trim()}"`);
+  if (data.note?.trim()) parts.push(`Note: "${humanizeText(data.note.trim())}"`);
 
-  const completedTodos = (data.todos ?? []).filter((todo) => todo.completed).map((todo) => todo.text);
-  const incompleteTodos = (data.todos ?? []).filter((todo) => !todo.completed).map((todo) => todo.text);
+  const completedTodos = (data.todos ?? [])
+    .filter((todo) => todo.completed)
+    .map((todo) => humanizeText(todo.text));
+  const incompleteTodos = (data.todos ?? [])
+    .filter((todo) => !todo.completed)
+    .map((todo) => humanizeText(todo.text));
   if (completedTodos.length > 0) parts.push(`Completed: ${completedTodos.join(', ')}`);
   if (incompleteTodos.length > 0) parts.push(`Left unfinished: ${incompleteTodos.join(', ')}`);
 
@@ -42,14 +50,12 @@ export function buildWeeklyCheckInPrompt(goal, days, anchorDate) {
     return `${dayName} (${dateStr}): ${describeDay(dateStr, days[dateStr])}`;
   });
 
-  return `Introducing Loves
-What you love doing is the best clue to your strengths. Each week, your Check-In will ask you to reflect back on what you found energizing or fulfilling, as a foundation to build on.
+  return `Hi! This is my weekly check-in - a quick way to reflect on what energized me at work. Looking back like this usually shows me where my real strengths are.
 
-What activities did you love last week?
-Write down activities during which you felt fulfilled, focused, or energized.
+What did I love doing last week? Read my notes below and tell me, with examples from specific days, what stood out. My notes mix work and personal life - please ignore personal stuff like hobbies, movies, workouts, concerts, or errands, and focus only on professional and work-related activities.
 
-Here are my daily notes from Monday to Sunday for this week:
+My notes, Monday to Sunday:
 ${dayLines.join('\n')}
 
-Based on these notes, answer the question above for me: what activities did I love last week? Point to specific days/notes as evidence.`;
+Please reply with just a short summary, around 600-700 characters, written in plain, natural language. Write it in first person, as if I'm the one saying it - for example "I made good progress on..." or "I loved doing...", not "you did...".`;
 }
