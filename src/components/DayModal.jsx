@@ -42,13 +42,34 @@ export default function DayModal({ dateStr, dayNumber, data, event, onSave, onCl
     return () => window.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
+  function getTodosWithPendingEdits() {
+    let result = todos;
+
+    if (editingTodoId !== null && editingTodoText.trim()) {
+      result = groupTodosByCompletion(
+        result.map((t) => (t.id === editingTodoId ? { ...t, text: editingTodoText.trim() } : t)),
+      );
+    }
+
+    if (editingSubtask && editingSubtaskText.trim()) {
+      result = updateSubtaskText(
+        result,
+        editingSubtask.todoId,
+        editingSubtask.subtaskId,
+        editingSubtaskText,
+      );
+    }
+
+    return result;
+  }
+
   function handleSave() {
     const hasStatus = status !== null;
     if (hasStatus && !note.trim() && !event) return;
     onSave(dateStr, {
       status,
       note: note.trim(),
-      todos: groupTodosByCompletion(todos),
+      todos: groupTodosByCompletion(getTodosWithPendingEdits()),
       workedWeekend: isWeekendDay ? workedWeekend : false,
     });
     onClose();

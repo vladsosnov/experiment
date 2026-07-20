@@ -15,6 +15,7 @@ import { ensureDailyMentalChecks, mentalCheckStartDate } from './components/ment
 import CompletedGoals from './components/CompletedGoals';
 import CompletionCelebration from './components/CompletionCelebration';
 import TodoInsights from './components/TodoInsights';
+import WeeklyCheckIn from './components/WeeklyCheckIn';
 import PasswordModal from './components/PasswordModal';
 import {
   loadGoal,
@@ -393,6 +394,7 @@ export default function App() {
         <CalendarGrid goal={goal} days={days} events={events} onDayClick={handleDayClick} />
         <EventsPanel goal={goal} events={events} onChange={handleEventsChange} />
         <TodoInsights goal={goal} days={days} />
+        <WeeklyCheckIn goal={goal} days={days} />
         <NotesTable goal={goal} days={days} />
         <SelfReflections reflections={reflections} onChange={handleReflectionsChange} />
         <MentalCheck checks={mentalChecks} onChange={handleMentalChecksChange} />

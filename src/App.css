@@ -1589,6 +1589,51 @@
   letter-spacing: 0.5px;
 }
 
+/* ── Weekly Check-In ───────────────────────────────────────────── */
+.checkin-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.checkin-header {
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid #334155;
+}
+
+.checkin-week-range {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.checkin-body {
+  padding: 16px 24px 20px;
+}
+
+.checkin-summary {
+  color: #64748b;
+  font-size: 0.82rem;
+  margin: 0 0 10px;
+}
+
+.checkin-prompt-preview {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #cbd5e1;
+  font-family: inherit;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  padding: 12px 14px;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .todo-upcoming {
   border-top: 1px solid #334155;
   padding-top: 16px;
@@ -2500,6 +2545,8 @@
   .weekday-headers { gap: 4px; }
   .reflections-header { align-items: flex-start; flex-direction: column; }
   .reflections-header-actions { justify-content: space-between; width: 100%; }
+  .events-header { align-items: flex-start; flex-direction: column; }
+  .events-header .reflections-header-actions { justify-content: space-between; width: 100%; }
   .reflection-date-col { width: 112px; }
   .reflection-actions-col { width: 44px; }
   .reflection-text { -webkit-line-clamp: 4; }

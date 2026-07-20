@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { listSpecialDaysInRange } from '../utils/dayAppearance';
+import { todayString } from '../utils/dates';
 
 const EMPTY_EVENTS = [];
 const PAGE_SIZE = 5;
@@ -22,10 +23,15 @@ function sortEvents(events) {
 }
 
 function getInitialForm(event, goal) {
+  const today = todayString();
+  const defaultStartDate = today < goal.startDate
+    ? goal.startDate
+    : (today > goal.endDate ? goal.endDate : today);
+
   return {
     text: event?.text ?? '',
-    startDate: event?.startDate ?? goal.startDate,
-    endDate: event?.endDate ?? goal.startDate,
+    startDate: event?.startDate ?? defaultStartDate,
+    endDate: event?.endDate ?? defaultStartDate,
     color: event?.color ?? PRESET_COLORS[0].color,
   };
 }
